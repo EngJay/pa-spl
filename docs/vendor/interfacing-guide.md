@@ -86,3 +86,9 @@ the decibel module using a 1.8V power source.
 
 Yes, you can use multiple decibel sensor modules on one I2C bus by using modules
 with different I2C addresses. Contact us after placing an order.
+
+## Change Log
+
+5 May 2023
+
+- Initial release
