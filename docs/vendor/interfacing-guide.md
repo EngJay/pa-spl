@@ -10,7 +10,7 @@ level meter module that reads sound pressure level in dB SPL. You can connect
 the sensor to your Arduino, ESP32, Raspberry Pi or similar hardware. This guide
 aims to make the task of decibel meter module interfacing easy for you.
 
-![PCB Artists I2C Decibel Meter Module](img/i2c-decibel-sound-level-meter-module-for-arduino-esp32-raspberry-pi-585x390.jpg)
+![PCB Artists I2C Decibel Meter Module](img/i2c-decibel-sound-level-meter-module-for-arduino-esp32-raspberry-pi-1200x800.jpg)
 
 ## Pinout and Pin Descriptions
 
