@@ -57,7 +57,8 @@ with our decibel sensor module.
 
 ## See the Module in Action
 
-Watch How2Electronics’ YouTube video using an ESP32 devkit and OLED display to
-show decibel values acquired from our sensor. At 0:40, you can see how the
-speaker’s properties and the module’s A-weighting affects decibel readings based
-on the sound frequency being measured.
+Watch [How2Electronics’ YouTube video](https://youtu.be/kzKfIT0UvOg)
+using an ESP32 devkit and OLED display to show decibel values acquired from our
+sensor. At 0:40, you can see how the speaker’s properties and the module’s
+A-weighting affects decibel readings based on the sound frequency being
+measured.
