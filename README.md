@@ -1,6 +1,6 @@
 # PCB Artists I2C Sound Level Module Driver
 
-*An embedded Rust driver for the
+*A `no_std` embedded Rust driver for the
 [PCB Artists I2C Sound Level module](https://pcbartists.com/product/i2c-decibel-sound-level-meter-module/).*
 
 ## Vendor Documentation
