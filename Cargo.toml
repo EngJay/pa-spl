@@ -9,7 +9,6 @@ version = "0.1.0"
 
 [dependencies]
 embedded-hal = "1.0.0"
-crc-any = { version = "2.3.5", default-features = false }
 
 [dev-dependencies]
 embedded-hal-mock = "0.11.1"
