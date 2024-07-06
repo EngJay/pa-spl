@@ -59,14 +59,14 @@ about 1 second to stabilize after power-up.
 
 Naming convention used for this section to describe I2C operations are:
 
-**DEV_ADDR** – I2C device address
-**REG_ADDR** – Device register address to read from or write to
-**R/W** Read/write bit in the I2C device address frame
-**ACK** – Acknowledge condition on the I2C bus
-**NACK** – No-acknowledge condition on the I2C bus
-**START** – Start condition on the I2C bus
+**DEV_ADDR** – I2C device address  
+**REG_ADDR** – Device register address to read from or write to  
+**R/W** Read/write bit in the I2C device address frame  
+**ACK** – Acknowledge condition on the I2C bus  
+**NACK** – No-acknowledge condition on the I2C bus  
+**START** – Start condition on the I2C bus  
 **STOP** – Stop condition on the I2C bus
-**RESTART** – Re-start or (stop + start) condition on the I2C bus
+**RESTART** – Re-start or (stop + start) condition on the I2C  bus
 
 > [!TIP]
 > To verify that I2C communication works, you can use the SCRATCH register to perform a write-read-verify sequence.
