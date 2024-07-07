@@ -5,6 +5,16 @@ use embedded_hal::i2c::I2c;
 /// PCB Artists SPL Module I2C address.
 const DEVICE_ADDR: u8 = 0x48;
 
+/// PCB Artists SPL Module Versions.
+/// MEMS mic version, long term support and available for sale.
+const DEVICE_VER_MEMS_LTS: u8 = 0x31;
+
+/// DEVICE_VER_MEMS_LTS features + audio spectrum analyzer.
+const DEVICE_VER_MEMS_LTS_ASA: u8 = 0x32;
+
+/// External mic, long term support and available for sale.
+const DEVICE_VER_MEMS_LTS_EXT: u8 = 0x81;
+
 /// Device Registers.
 const VER_REGISTER: u8 = 0x00;
 
@@ -64,5 +74,28 @@ where
         if let Some(_i2c) = self.i2c.take() {
             // Additional clean-up, logging, etc. here.
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{PaSpl, DEVICE_ADDR, DEVICE_VER_MEMS_LTS_ASA, VER_REGISTER};
+    use embedded_hal_mock::eh1::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+
+    #[test]
+    fn read_firmware_version() {
+        let expectations = vec![I2cTransaction::write_read(
+            DEVICE_ADDR,
+            vec![VER_REGISTER],
+            vec![DEVICE_VER_MEMS_LTS_ASA],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+
+        let mut pa_spl = PaSpl::new(i2c_mock);
+        let version = pa_spl.read_firmware_version().unwrap();
+        assert_eq!(DEVICE_VER_MEMS_LTS_ASA, version);
+
+        let mut mock = pa_spl.destroy();
+        mock.done(); // Verify expectations.1
     }
 }
