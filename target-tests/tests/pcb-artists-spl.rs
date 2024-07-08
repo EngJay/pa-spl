@@ -6,18 +6,30 @@ use panic_probe as _; // panic handler
 use stm32f3xx_hal as _; // memory layout
 
 use pcb_artists_spl::PaSpl;
+use stm32f3xx_hal::gpio::{
+    gpioa::{PA10, PA9},
+    Alternate, OpenDrain,
+};
 use stm32f3xx_hal::{i2c::I2c, pac, prelude::*};
 
-// struct State {
-//     pa_spl: PaSpl<I2c<pac::I2C1>>,
-// }
+struct State {
+    pa_spl: PaSpl<I2c<pac::I2C1, (PA9<Alternate<OpenDrain, 4>>, PA10<Alternate<OpenDrain, 4>>)>>,
+}
 
 #[defmt_test::tests]
 mod tests {
+    use super::State;
     use defmt::{assert_eq, unwrap};
-    // use stm32f3xx_hal::{i2c::I2c, pac, prelude::*};
-
-    // use super::State;
+    use pcb_artists_spl::PaSpl;
+    use stm32f3xx_hal::{
+        gpio::{
+            gpioa::{PA10, PA9},
+            Alternate, OpenDrain, AF4,
+        },
+        i2c::I2c,
+        pac,
+        prelude::*,
+    };
 
     // #[init]
     // fn setup() -> State {
