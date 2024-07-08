@@ -6,14 +6,14 @@ use embedded_hal::blocking::i2c;
 const DEVICE_ADDR: u8 = 0x48;
 
 /// PCB Artists SPL Module Versions.
-/// MEMS mic version, long term support and available for sale.
-const DEVICE_VER_MEMS_LTS: u8 = 0x31;
+// /// MEMS mic version, long term support and available for sale.
+// const DEVICE_VER_MEMS_LTS: u8 = 0x31;
 
-/// DEVICE_VER_MEMS_LTS features + audio spectrum analyzer.
-const DEVICE_VER_MEMS_LTS_ASA: u8 = 0x32;
+// /// DEVICE_VER_MEMS_LTS features + audio spectrum analyzer.
+// const DEVICE_VER_MEMS_LTS_ASA: u8 = 0x32;
 
-/// External mic, long term support and available for sale.
-const DEVICE_VER_MEMS_LTS_EXT: u8 = 0x81;
+// /// External mic, long term support and available for sale.
+// const DEVICE_VER_MEMS_LTS_EXT: u8 = 0x81;
 
 /// Device Registers.
 const VER_REGISTER: u8 = 0x00;
@@ -26,7 +26,7 @@ where
     i2c: Option<I2C>,
 }
 
-// / A driver error.
+/// A driver error.
 #[derive(Debug, PartialEq)]
 pub enum Error<E> {
     /// I2C bus error.
@@ -65,11 +65,14 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{PaSpl, DEVICE_ADDR, DEVICE_VER_MEMS_LTS_ASA, VER_REGISTER};
+    use super::{PaSpl, DEVICE_ADDR, VER_REGISTER};
     use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
 
+    /// DEVICE_VER_MEMS_LTS features + audio spectrum analyzer.
+    const DEVICE_VER_MEMS_LTS_ASA: u8 = 0x32;
+
     #[test]
-    fn firmware_version() {
+    fn confirm_firmware_version() {
         let expectations = vec![I2cTransaction::write_read(
             DEVICE_ADDR,
             vec![VER_REGISTER],
