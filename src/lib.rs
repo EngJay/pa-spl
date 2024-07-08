@@ -53,15 +53,6 @@ where
             .write_read(DEVICE_ADDR, &[VER_REGISTER], &mut ver)
             .map_err(Error::I2c)?;
         Ok(ver[0])
-
-        // if let Some(ref mut i2c) = self.i2c {
-        //     i2c.write_read(DEVICE_ADDR, &[VER_REGISTER], &mut ver)
-        //         .map_err(Error::I2c)?;
-        //     Ok(ver[0])
-        // } else {
-        //     // Return an appropriate error if I2C is None.
-        //     Err(Error::NoI2cInstance)
-        // }
     }
 
     /// Destroys this driver and releases the I2C bus.
