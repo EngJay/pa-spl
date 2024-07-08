@@ -90,4 +90,11 @@ mod tests {
         let firmware_version = state.pa_spl.get_firmware_version().unwrap();
         assert_eq!(EXPECTED, firmware_version);
     }
+
+    #[test]
+    fn confirm_device_id(state: &mut State) {
+        const EXPECTED: u32 = 12345; // TODO Determine expected value; it's not published.
+        let device_id = state.pa_spl.get_device_id().unwrap();
+        assert_eq!(EXPECTED, device_id);
+    }
 }
