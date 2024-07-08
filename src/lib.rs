@@ -5,19 +5,9 @@ use embedded_hal::blocking::i2c;
 /// PCB Artists SPL Module I2C address.
 const DEVICE_ADDR: u8 = 0x48;
 
-/// PCB Artists SPL Module Versions.
-// /// MEMS mic version, long term support and available for sale.
-// const DEVICE_VER_MEMS_LTS: u8 = 0x31;
-
-// /// DEVICE_VER_MEMS_LTS features + audio spectrum analyzer.
-// const DEVICE_VER_MEMS_LTS_ASA: u8 = 0x32;
-
-// /// External mic, long term support and available for sale.
-// const DEVICE_VER_MEMS_LTS_EXT: u8 = 0x81;
-
 /// Device Registers.
 const VER_REGISTER: u8 = 0x00;
-const SCRATCH_REGISTER: u8 = 0x05;
+// const SCRATCH_REGISTER: u8 = 0x05;
 const DEVICE_ID_REGISTERS: [u8; 4] = [0x01, 0x02, 0x03, 0x04]; // ID3, ID2, ID1, ID0
 
 /// A PA SPL Module on the I2C bus `I`.
