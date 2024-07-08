@@ -79,11 +79,6 @@ mod tests {
     }
 
     #[test]
-    fn sanity_check() {
-        assert!(true);
-    }
-
-    #[test]
     fn confirm_firmware_version(state: &mut State) {
         // NOTE: The published version is 0x32 but this device returns 0x33.
         const EXPECTED: u8 = 0x33;
@@ -93,8 +88,13 @@ mod tests {
 
     #[test]
     fn confirm_device_id(state: &mut State) {
-        const EXPECTED: u32 = 12345; // TODO Determine expected value; it's not published.
+        const EXPECTED: u32 = 1867099226; // TODO Device ID is not published - need to verify somehow, #5.
         let device_id = state.pa_spl.get_device_id().unwrap();
         assert_eq!(EXPECTED, device_id);
+    }
+
+    #[test]
+    fn sanity_check() {
+        assert!(true);
     }
 }

@@ -18,6 +18,7 @@ const DEVICE_ADDR: u8 = 0x48;
 /// Device Registers.
 const VER_REGISTER: u8 = 0x00;
 const SCRATCH_REGISTER: u8 = 0x05;
+const DEVICE_ID_REGISTERS: [u8; 4] = [0x01, 0x02, 0x03, 0x04]; // ID3, ID2, ID1, ID0
 
 /// A PA SPL Module on the I2C bus `I`.
 pub struct PaSpl<I2C>
@@ -43,6 +44,23 @@ where
     /// Initializes the PA SPL Module driver.
     pub fn new(i2c: I2C) -> Self {
         Self { i2c: Some(i2c) }
+    }
+
+    pub fn get_device_id(&mut self) -> Result<u32, Error<E>> {
+        let mut buffer: [u8; 4] = [0; 4];
+        self.i2c
+            .as_mut()
+            .ok_or(Error::NoI2cInstance)?
+            .write_read(DEVICE_ADDR, &[DEVICE_ID_REGISTERS[0]], &mut buffer)
+            .map_err(Error::I2c)?;
+
+        // Combine the bytes into a u32.
+        let device_id: u32 = ((buffer[0] as u32) << 24)
+            | ((buffer[1] as u32) << 16)
+            | ((buffer[2] as u32) << 8)
+            | (buffer[3] as u32);
+
+        Ok(device_id)
     }
 
     pub fn get_firmware_version(&mut self) -> Result<u8, Error<E>> {
