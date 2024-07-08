@@ -2,19 +2,19 @@
 #![no_main]
 
 use defmt::Format;
-use defmt_rtt as _; // defmt transport
-use panic_probe as _; // panic handler
-use stm32f3xx_hal as _; // memory layout
+use defmt_rtt as _; // defmt transport.
+use panic_probe as _; // Panic handler.
+use stm32f3xx_hal as _; // Memory layout.
 
 use pcb_artists_spl::{Error, PaSpl};
 use stm32f3xx_hal::gpio::{
-    gpiob::{PB8, PB9},
+    gpiob::{PB6, PB7},
     Alternate, OpenDrain,
 };
 use stm32f3xx_hal::{i2c::I2c, pac, prelude::*};
 
 struct State {
-    pa_spl: PaSpl<I2c<pac::I2C1, (PB8<Alternate<OpenDrain, 4>>, PB9<Alternate<OpenDrain, 4>>)>>,
+    pa_spl: PaSpl<I2c<pac::I2C1, (PB6<Alternate<OpenDrain, 4>>, PB7<Alternate<OpenDrain, 4>>)>>,
 }
 
 // Define a newtype wrapper for Error<E>
@@ -39,7 +39,7 @@ mod tests {
     use super::State;
     use defmt::{assert_eq, debug, error, unwrap};
     use pcb_artists_spl::{Error, PaSpl};
-    use stm32f3xx_hal::{i2c::I2c, pac, prelude::*};
+    use stm32f3xx_hal::{gpio::gpiob, i2c::I2c, pac, prelude::*};
 
     #[init]
     fn setup() -> State {
@@ -54,18 +54,22 @@ mod tests {
         let clocks = rcc.cfgr.freeze(&mut flash.acr);
 
         let mut gpiob = device_periphs.GPIOB.split(&mut rcc.ahb);
-        let scl =
+
+        // Configure I2C1.
+        let mut scl =
             gpiob
-                .pb8
-                .into_af_open_drain::<4>(&mut gpiob.moder, &mut gpiob.otyper, &mut gpiob.afrh);
-        let sda =
+                .pb6
+                .into_af_open_drain(&mut gpiob.moder, &mut gpiob.otyper, &mut gpiob.afrl);
+        let mut sda =
             gpiob
-                .pb9
-                .into_af_open_drain::<4>(&mut gpiob.moder, &mut gpiob.otyper, &mut gpiob.afrh);
+                .pb7
+                .into_af_open_drain(&mut gpiob.moder, &mut gpiob.otyper, &mut gpiob.afrl);
+        scl.internal_pull_up(&mut gpiob.pupdr, true);
+        sda.internal_pull_up(&mut gpiob.pupdr, true);
         let i2c = I2c::new(
             device_periphs.I2C1,
             (scl, sda),
-            1_000_000.Hz(),
+            100.kHz().try_into().unwrap(),
             clocks,
             &mut rcc.apb1,
         );
@@ -75,14 +79,15 @@ mod tests {
     }
 
     #[test]
-    fn always_passes() {
+    fn sanity_check() {
         assert!(true);
     }
 
-    // #[test]
-    // fn confirm_firmware_version(state: &mut State) {
-    //     const EXPECTED: u8 = 0x32;
-    //     let firmware_version = state.pa_spl.get_firmware_version().unwrap();
-    //     assert_eq!(EXPECTED, firmware_version);
-    // }
+    #[test]
+    fn confirm_firmware_version(state: &mut State) {
+        // NOTE: The published version is 0x32 but this device returns 0x33.
+        const EXPECTED: u8 = 0x33;
+        let firmware_version = state.pa_spl.get_firmware_version().unwrap();
+        assert_eq!(EXPECTED, firmware_version);
+    }
 }

@@ -17,6 +17,7 @@ const DEVICE_ADDR: u8 = 0x48;
 
 /// Device Registers.
 const VER_REGISTER: u8 = 0x00;
+const SCRATCH_REGISTER: u8 = 0x05;
 
 /// A PA SPL Module on the I2C bus `I`.
 pub struct PaSpl<I2C>
@@ -45,14 +46,14 @@ where
     }
 
     pub fn get_firmware_version(&mut self) -> Result<u8, Error<E>> {
-        let mut ver = [0];
-
+        let mut buffer = [0; 1];
         self.i2c
             .as_mut()
             .ok_or(Error::NoI2cInstance)?
-            .write_read(DEVICE_ADDR, &[VER_REGISTER], &mut ver)
+            .write_read(DEVICE_ADDR, &[VER_REGISTER], &mut buffer)
             .map_err(Error::I2c)?;
-        Ok(ver[0])
+
+        Ok(buffer[0])
     }
 
     /// Destroys this driver and releases the I2C bus.
@@ -85,6 +86,6 @@ mod tests {
         assert_eq!(DEVICE_VER_MEMS_LTS_ASA, version);
 
         let mut mock = pa_spl.destroy();
-        mock.done(); // Verify expectations.1
+        mock.done();
     }
 }
