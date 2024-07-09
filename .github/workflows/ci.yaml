@@ -50,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run clippy
-        run: /
+        run: |
           cargo clippy -- -A clippy::all
       - name: Format
         run: |
@@ -68,7 +68,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run rustdoc
-        run: /
+        run: |
           cargo doc
       - uses: actions/upload-artifact@v4
         with:
