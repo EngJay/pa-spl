@@ -34,9 +34,16 @@ jobs:
       options: -h gha.ci.unit-tests
     steps:
       - uses: actions/checkout@v4
-      - name: Run unit tests
+      - name: Run unit tests with coverage
         run: |
-          cargo test
+          CARGO_INCREMENTAL=0 RUSTFLAGS='-Cinstrument-coverage' LLVM_PROFILE_FILE='cargo-test-%p-%m.profraw' cargo test
+      - name: Generate coverage report
+        run: |
+          grcov . --binary-path ./target/debug/deps/ -s . -t lcov --branch --ignore-not-existing --ignore '../*' --ignore "/*" -o target/coverage/tests.lcov
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report.lcov
+          path: target/coverage/tests.lcov
 
   analysis:
     name: Analysis
