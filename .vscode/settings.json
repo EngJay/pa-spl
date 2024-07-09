@@ -7,6 +7,8 @@
     "jacoco.xml",
     "coverage.cobertura.xml"
   ],
+  "coverage-gutters.showLineCoverage": true,
+  "coverage-gutters.showGutterCoverage": false,
 
   "rust-analyzer.linkedProjects": [
     // order is important (rust-analyzer/rust-analyzer#7764)
