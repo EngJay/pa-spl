@@ -7,8 +7,8 @@ const DEVICE_ADDR: u8 = 0x48;
 
 /// Device Registers.
 const VER_REGISTER: u8 = 0x00;
-// const SCRATCH_REGISTER: u8 = 0x05;
 const DEVICE_ID_REGISTERS: [u8; 4] = [0x01, 0x02, 0x03, 0x04]; // ID3, ID2, ID1, ID0
+const SCRATCH_REGISTER: u8 = 0x05;
 
 /// A PA SPL Module on the I2C bus `I`.
 pub struct PaSpl<I2C>
@@ -74,7 +74,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{PaSpl, DEVICE_ADDR, DEVICE_ID_REGISTERS, VER_REGISTER};
+    use super::{PaSpl, DEVICE_ADDR, DEVICE_ID_REGISTERS, SCRATCH_REGISTER, VER_REGISTER};
     use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
 
     /// DEVICE_VER_MEMS_LTS: Published version for base features + audio spectrum analyzer.
@@ -109,6 +109,25 @@ mod tests {
         let mut pa_spl = PaSpl::new(i2c_mock);
         let version = pa_spl.get_firmware_version().unwrap();
         assert_eq!(DEVICE_VER_MEMS_LTS_ASA, version);
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    #[test]
+    fn confirm_get_scratch_register() {
+        let expectations = vec![
+            I2cTransaction::write_read(DEVICE_ADDR, vec![SCRATCH_REGISTER], vec![0x99]),
+            // I2cTransaction::write(DEVICE_ADDR, vec![SCRATCH_REGISTER]),
+            // I2cTransaction::write(DEVICE_ADDR, vec![0x99]),
+        ];
+        let i2c_mock = I2cMock::new(&expectations);
+
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let scratch_write_val: u8 = 0x99;
+        let scratch_read_val = pa_spl.get_scratch().unwrap();
+        assert_eq!(scratch_write_val, scratch_read_val);
 
         let mut mock = pa_spl.destroy();
         mock.done();
