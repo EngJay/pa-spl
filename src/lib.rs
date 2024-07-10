@@ -74,11 +74,28 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{PaSpl, DEVICE_ADDR, VER_REGISTER};
+    use super::{PaSpl, DEVICE_ADDR, DEVICE_ID_REGISTERS, VER_REGISTER};
     use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
 
-    /// DEVICE_VER_MEMS_LTS features + audio spectrum analyzer.
+    /// DEVICE_VER_MEMS_LTS: Published version for base features + audio spectrum analyzer.
     const DEVICE_VER_MEMS_LTS_ASA: u8 = 0x32;
+
+    #[test]
+    fn confirm_device_id() {
+        let expectations = vec![I2cTransaction::write_read(
+            DEVICE_ADDR,
+            vec![DEVICE_ID_REGISTERS[0]],
+            vec![0x01, 0x02, 0x03, 0x04],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+
+        let mut pa_spl = PaSpl::new(i2c_mock);
+        let device_id = pa_spl.get_device_id().unwrap();
+        assert_eq!(0x01020304, device_id);
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
 
     #[test]
     fn confirm_firmware_version() {
