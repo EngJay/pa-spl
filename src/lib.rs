@@ -64,6 +64,17 @@ where
         Ok(buffer[0])
     }
 
+    pub fn get_scratch(&mut self) -> Result<u8, Error<E>> {
+        let mut buffer = [0; 1];
+        self.i2c
+            .as_mut()
+            .ok_or(Error::NoI2cInstance)?
+            .write_read(DEVICE_ADDR, &[SCRATCH_REGISTER], &mut buffer)
+            .map_err(Error::I2c)?;
+
+        Ok(buffer[0])
+    }
+
     /// Destroys this driver and releases the I2C bus.
     pub fn destroy(mut self) -> I2C {
         self.i2c
