@@ -1,6 +1,6 @@
 # PCB Artists I2C Sound Level Module Driver
 
-![example workflow](https://github.com/engjay/pcb-artists-i2c-spl-module-driver-rust/actions/workflows/ci.yaml/badge.svg)
+![ci workflow](https://github.com/engjay/pcb-artists-i2c-spl-module-driver-rust/actions/workflows/ci.yaml/badge.svg)
 
 *A `no_std` embedded Rust driver for the
 [PCB Artists I2C Sound Level module](https://pcbartists.com/product/i2c-decibel-sound-level-meter-module/).*
