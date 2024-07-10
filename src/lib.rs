@@ -75,6 +75,14 @@ where
         Ok(buffer[0])
     }
 
+    pub fn set_scratch(&mut self, value: u8) -> Result<(), Error<E>> {
+        self.i2c
+            .as_mut()
+            .ok_or(Error::NoI2cInstance)?
+            .write(DEVICE_ADDR, &[SCRATCH_REGISTER, value])
+            .map_err(Error::I2c)
+    }
+
     /// Destroys this driver and releases the I2C bus.
     pub fn destroy(mut self) -> I2C {
         self.i2c
@@ -116,8 +124,8 @@ mod tests {
             vec![DEVICE_VER_MEMS_LTS_ASA],
         )];
         let i2c_mock = I2cMock::new(&expectations);
-
         let mut pa_spl = PaSpl::new(i2c_mock);
+
         let version = pa_spl.get_firmware_version().unwrap();
         assert_eq!(DEVICE_VER_MEMS_LTS_ASA, version);
 
@@ -126,19 +134,35 @@ mod tests {
     }
 
     #[test]
-    fn confirm_get_scratch_register() {
-        let expectations = vec![
-            I2cTransaction::write_read(DEVICE_ADDR, vec![SCRATCH_REGISTER], vec![0x99]),
-            // I2cTransaction::write(DEVICE_ADDR, vec![SCRATCH_REGISTER]),
-            // I2cTransaction::write(DEVICE_ADDR, vec![0x99]),
-        ];
+    fn confirm_get_scratch() {
+        let expectations = vec![I2cTransaction::write_read(
+            DEVICE_ADDR,
+            vec![SCRATCH_REGISTER],
+            vec![0x99],
+        )];
         let i2c_mock = I2cMock::new(&expectations);
-
         let mut pa_spl = PaSpl::new(i2c_mock);
 
         let scratch_write_val: u8 = 0x99;
         let scratch_read_val = pa_spl.get_scratch().unwrap();
         assert_eq!(scratch_write_val, scratch_read_val);
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    #[test]
+    fn confirm_set_scratch() {
+        let scratch_write_val: u8 = 0x99;
+        let expectations = vec![I2cTransaction::write(
+            DEVICE_ADDR,
+            vec![SCRATCH_REGISTER, scratch_write_val],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let result = pa_spl.set_scratch(scratch_write_val);
+        assert!(result.is_ok());
 
         let mut mock = pa_spl.destroy();
         mock.done();
