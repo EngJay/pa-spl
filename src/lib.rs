@@ -85,7 +85,7 @@ where
     /// # Examples
     ///
     /// ```ignore
-    /// let firmware_version = pa_spl.get_latest_decibel().unwrap();
+    /// let latest_decibel_val = pa_spl.get_latest_decibel().unwrap();
     /// ```
     pub fn get_latest_decibel(&mut self) -> Result<u8, Error<E>> {
         let mut buffer = [0; 1];
