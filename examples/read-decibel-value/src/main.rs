@@ -1,19 +1,19 @@
 // Reads the latest decibel value and prints it to UART?
 
-#![deny(unsafe_code)]
 #![no_main]
 #![no_std]
+
+use cortex_m::asm;
+use cortex_m_rt::entry;
 
 // Use halt as the panicking behavior.
 //
 // A breakpoint can be set on `rust_begin_unwind` to catch panics.
 //
 use panic_halt as _;
-
-use cortex_m::asm;
-use cortex_m_rt::entry;
-
 use stm32f3xx_hal::{delay::Delay, i2c::I2c, pac, prelude::*, serial::config, serial::Serial};
+
+use core::fmt::Write;
 
 #[entry]
 fn main() -> ! {
@@ -44,7 +44,7 @@ fn main() -> ! {
     //
     let mut rcc = device_periphs.RCC.constrain();
     let mut flash = device_periphs.FLASH.constrain();
-    let clocks = rcc.cfgr.freeze(&mut flash.acr);
+    let clocks = rcc.cfgr.sysclk(48.MHz()).freeze(&mut flash.acr);
 
     // Set up delay capability.
     //
@@ -111,5 +111,17 @@ fn main() -> ! {
         &mut rcc.apb1,
     );
 
-    loop {}
+    // Delay in milliseconds between UART writes.
+    //
+    const UART_WRITE_DELAY_MS: u16 = 2_000;
+
+    loop {
+        uart4.write_str("Hello, World!\r\n").unwrap_or_else(|_| {
+            loop {
+                // Failed to write to UART4.
+                asm::nop(); // If real app, replace with actual error handling.
+            }
+        });
+        delay.delay_ms(UART_WRITE_DELAY_MS);
+    }
 }
