@@ -94,6 +94,16 @@ mod tests {
     }
 
     #[test]
+    fn confirm_rw_scratch(state: &mut State) {
+        const EXPECTED_VAL: u8 = 0x99;
+        let write_result = state.pa_spl.set_scratch(EXPECTED_VAL);
+        assert!(write_result.is_ok());
+
+        let val = state.pa_spl.get_scratch().unwrap();
+        assert_eq!(EXPECTED_VAL, val);
+    }
+
+    #[test]
     fn sanity_check() {
         assert!(true);
     }
