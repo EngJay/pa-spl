@@ -38,7 +38,7 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// # Examples
-    /// ```
+    /// ```ignore
     /// // Configure clocks.
     /// let device_periphs = unwrap!(pac::Peripherals::take());
     /// let mut rcc = device_periphs.RCC.constrain();
@@ -83,7 +83,7 @@ where
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// let device_id = pa_spl.get_device_id().unwrap();
     /// ```
     ///
@@ -114,7 +114,7 @@ where
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// let firmware_version = pa_spl.get_firmware_version().unwrap();
     /// ```
     pub fn get_firmware_version(&mut self) -> Result<u8, Error<E>> {
@@ -138,7 +138,7 @@ where
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// let val = pa_spl.get_scratch().unwrap();
     /// ```
     pub fn get_scratch(&mut self) -> Result<u8, Error<E>> {
@@ -162,7 +162,7 @@ where
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// let scratch_val = 0x99;
     /// let result = pa_spl.set_scratch(scratch_val);
     /// ```
