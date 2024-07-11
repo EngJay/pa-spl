@@ -79,6 +79,14 @@ mod tests {
     }
 
     #[test]
+    fn confirm_read_latest_decibel(state: &mut State) {
+        // The value returned is a sensed value, so this only tests that a valid
+        // result is returned.
+        let result = state.pa_spl.get_latest_decibel();
+        assert!(result.is_ok());
+    }
+
+    #[test]
     fn confirm_firmware_version(state: &mut State) {
         // NOTE: The published version is 0x32 but this device returns 0x33.
         const EXPECTED: u8 = 0x33;
