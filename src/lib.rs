@@ -10,7 +10,7 @@ const VER_REGISTER: u8 = 0x00;
 const DEVICE_ID_REGISTERS: [u8; 4] = [0x01, 0x02, 0x03, 0x04]; // ID3, ID2, ID1, ID0
 const SCRATCH_REGISTER: u8 = 0x05;
 
-/// A PA SPL Module on the I2C bus `I`.
+/// A PA SPL Module on the I2C bus `I2C`.
 pub struct PaSpl<I2C>
 where
     I2C: i2c::Read + i2c::Write + i2c::WriteRead,
@@ -31,11 +31,62 @@ impl<E, I2C> PaSpl<I2C>
 where
     I2C: i2c::Read<Error = E> + i2c::Write<Error = E> + i2c::WriteRead<Error = E>,
 {
-    /// Initializes the PA SPL Module driver.
+    /// Initializes the PCB Artists SPL Module driver.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// # Examples
+    /// ```
+    /// // Configure clocks.
+    /// let device_periphs = unwrap!(pac::Peripherals::take());
+    /// let mut rcc = device_periphs.RCC.constrain();
+    /// let mut flash = device_periphs.FLASH.constrain();
+    /// let clocks = rcc.cfgr.freeze(&mut flash.acr);
+    ///
+    /// // Get the GRIO port for the pins needed.
+    /// let mut gpiob = device_periphs.GPIOB.split(&mut rcc.ahb);
+    ///
+    /// // Configure pins and create an instance of I2C1.
+    /// let mut scl =
+    ///     gpiob
+    ///         .pb6
+    ///         .into_af_open_drain(&mut gpiob.moder, &mut gpiob.otyper, &mut gpiob.afrl);
+    /// let mut sda =
+    ///     gpiob
+    ///         .pb7
+    ///         .into_af_open_drain(&mut gpiob.moder, &mut gpiob.otyper, &mut gpiob.afrl);
+    /// scl.internal_pull_up(&mut gpiob.pupdr, true);
+    /// sda.internal_pull_up(&mut gpiob.pupdr, true);
+    /// let i2c = I2c::new(
+    ///     device_periphs.I2C1,
+    ///     (scl, sda),
+    ///     100.kHz().try_into().unwrap(),
+    ///     clocks,
+    ///     &mut rcc.apb1,
+    /// );
+    ///
+    /// let pa_spl = PaSpl::new(i2c);
+    /// ```
     pub fn new(i2c: I2C) -> Self {
         Self { i2c: Some(i2c) }
     }
 
+    /// Gets the 32-bit device ID from registers ID3-ID0.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let device_id = pa_spl.get_device_id().unwrap();
+    /// ```
+    ///
     pub fn get_device_id(&mut self) -> Result<u32, Error<E>> {
         let mut buffer: [u8; 4] = [0; 4];
         self.i2c
@@ -53,6 +104,19 @@ where
         Ok(device_id)
     }
 
+    /// Gets the firmware version.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let firmware_version = pa_spl.get_firmware_version().unwrap();
+    /// ```
     pub fn get_firmware_version(&mut self) -> Result<u8, Error<E>> {
         let mut buffer = [0; 1];
         self.i2c
@@ -64,6 +128,19 @@ where
         Ok(buffer[0])
     }
 
+    /// Gets the value stored in the scratch register.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let val = pa_spl.get_scratch().unwrap();
+    /// ```
     pub fn get_scratch(&mut self) -> Result<u8, Error<E>> {
         let mut buffer = [0; 1];
         self.i2c
@@ -75,6 +152,20 @@ where
         Ok(buffer[0])
     }
 
+    /// Sets the value stored in the scratch register.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let scratch_val = 0x99;
+    /// let result = pa_spl.set_scratch(scratch_val);
+    /// ```
     pub fn set_scratch(&mut self, value: u8) -> Result<(), Error<E>> {
         self.i2c
             .as_mut()
