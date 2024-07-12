@@ -170,6 +170,8 @@ fn main() -> ! {
                 asm::nop(); // If real app, replace with actual error handling.
             }
         });
-        delay.delay_ms(UART_WRITE_DELAY_MS); // Limit algorithm to 2 Hz.
+
+        // Limit algorithm to (1000 * (1 / UART_WRITE_DELAY_MS)) Hz.
+        delay.delay_ms(UART_WRITE_DELAY_MS);
     }
 }
