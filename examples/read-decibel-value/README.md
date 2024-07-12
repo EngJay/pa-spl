@@ -1,15 +1,25 @@
 # PCB Artists SPL Module Example
 
-*A minimal example of using a STM32F3 Discovery development board to read the
-SPL from a PCB Artists SPL Module and write it out via UART.*
+*A minimal example using a STM32F3 Discovery development board to read the
+SPL from a PCB Artists SPL Module.*
 
 ## Building and Running
 
 GDB and OpenOCD have been configured in the cargo config, so the example can be
-built, flashed, and run by using the Cargo run command.
+built, flashed, and run using the Cargo run command as long as GDB and OpenOCD
+are installed.
 
-First, open a shell and run OpenOCD, to which a similar response should be
-received if the board is connected with the onboard ST-Link debuggr.
+Hardware setup:
+
+- Connect the V3.3 and ground pins of the sensor to matching pins on the dev
+  board.
+- Connect the SCL and SDA pins of the sensor to pins PB6 and PB7, respectively,
+  on the dev board.
+- Connect the TX and RX pins of your TTL-to-USB converter to pins PC11 and PC10,
+  respectively, and connect the ground pin to matching pin on the board.
+
+Then, open a shell and run OpenOCD, to which a similar response as shown here
+should be received if the board is connected with the onboard ST-Link debugger.
 
 ```bash
 openocd
@@ -42,8 +52,9 @@ cargo run
 (gdb)
 ```
 
-The gdp configuration sets some breakpoints by default, so it will likely be
-necessary to continue past a few breakpoints to reach the main loop.
+The gdb configuration sets some breakpoints by default, so it will likely be
+necessary to continue past a few breakpoints to reach the main loop. That should
+look simialr to this.
 
 ```bash
 (gdb) continue
@@ -56,9 +67,13 @@ Breakpoint 4, example_read_decibel_value::__cortex_m_rt_main_trampoline ()
 Continuing.
 ```
 
-Once running, the SPL will be printed out via UART4.
+Once running in the main loop, the SPL will be output via UART4. With a
+TTL-to-USB converter, the output can be read into a shell. This output was
+received using
+[PySerial's Miniterm](https://pyserial.readthedocs.io/en/latest/tools.html#module-serial.tools.miniterm).
 
 ```bash
+python -m serial.tools.miniterm /dev/cu.usbserial-A10KGFJI 115200
 SPL: 51
 SPL: 52
 SPL: 53
