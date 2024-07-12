@@ -1,4 +1,4 @@
-// Reads the latest decibel value and prints it to UART?
+// Reads the latest decibel value and prints it to UART4.
 
 #![no_main]
 #![no_std]
@@ -11,9 +11,40 @@ use cortex_m_rt::entry;
 // A breakpoint can be set on `rust_begin_unwind` to catch panics.
 //
 use panic_halt as _;
+use pcb_artists_spl::PaSpl;
 use stm32f3xx_hal::{delay::Delay, i2c::I2c, pac, prelude::*, serial::config, serial::Serial};
 
 use core::fmt::Write;
+
+struct BufWriter<'a> {
+    buf: &'a mut [u8],
+    pos: usize,
+}
+
+impl<'a> BufWriter<'a> {
+    pub fn new(buf: &'a mut [u8]) -> Self {
+        BufWriter { buf, pos: 0 }
+    }
+
+    pub fn as_str(&self) -> &str {
+        core::str::from_utf8(&self.buf[..self.pos]).unwrap()
+    }
+}
+
+impl<'a> core::fmt::Write for BufWriter<'a> {
+    fn write_str(&mut self, s: &str) -> core::fmt::Result {
+        let bytes = s.as_bytes();
+        let len = bytes.len();
+
+        if self.pos + len > self.buf.len() {
+            return Err(core::fmt::Error);
+        }
+
+        self.buf[self.pos..self.pos + len].copy_from_slice(bytes);
+        self.pos += len;
+        Ok(())
+    }
+}
 
 #[entry]
 fn main() -> ! {
@@ -111,12 +142,29 @@ fn main() -> ! {
         &mut rcc.apb1,
     );
 
+    // Use the I2C1 instance to create an instance of PaSpl.
+    //
+    let mut pa_spl = PaSpl::new(i2c);
+
+    // Create a buffer able to be converted to a string.
+    let mut buffer: [u8; 9] = [0; 9];
+    let mut buf_writer = BufWriter::new(&mut buffer);
+
     // Delay in milliseconds between UART writes.
     //
-    const UART_WRITE_DELAY_MS: u16 = 2_000;
+    const UART_WRITE_DELAY_MS: u16 = 500;
 
     loop {
-        uart4.write_str("Hello, World!\r\n").unwrap_or_else(|_| {
+        // Get SPL value from the sensor, then format and convert it.
+        //
+        let spl = pa_spl.get_latest_decibel().unwrap();
+        let mut buf_writer = BufWriter::new(&mut buffer);
+        write!(buf_writer, "SPL: {}\r\n", spl).unwrap();
+        let spl_str = core::str::from_utf8(&buffer).unwrap();
+
+        // Write out to the UART.
+        //
+        uart4.write_str(spl_str).unwrap_or_else(|_| {
             loop {
                 // Failed to write to UART4.
                 asm::nop(); // If real app, replace with actual error handling.
