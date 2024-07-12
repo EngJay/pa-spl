@@ -7,6 +7,7 @@ const DEVICE_ADDR: u8 = 0x48;
 
 /// Device Registers.
 const VER_REGISTER: u8 = 0x00;
+const DECIBEL_REGISTER: u8 = 0x0A;
 const DEVICE_ID_REGISTERS: [u8; 4] = [0x01, 0x02, 0x03, 0x04]; // ID3, ID2, ID1, ID0
 const SCRATCH_REGISTER: u8 = 0x05;
 
@@ -71,6 +72,30 @@ where
     /// ```
     pub fn new(i2c: I2C) -> Self {
         Self { i2c: Some(i2c) }
+    }
+
+    /// Gets the latest sound intensity value in decibels averaged over the last Tavg time period.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// let latest_decibel_val = pa_spl.get_latest_decibel().unwrap();
+    /// ```
+    pub fn get_latest_decibel(&mut self) -> Result<u8, Error<E>> {
+        let mut buffer = [0; 1];
+        self.i2c
+            .as_mut()
+            .ok_or(Error::NoI2cInstance)?
+            .write_read(DEVICE_ADDR, &[DECIBEL_REGISTER], &mut buffer)
+            .map_err(Error::I2c)?;
+
+        Ok(buffer[0])
     }
 
     /// Gets the 32-bit device ID from registers ID3-ID0.
@@ -184,11 +209,30 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{PaSpl, DEVICE_ADDR, DEVICE_ID_REGISTERS, SCRATCH_REGISTER, VER_REGISTER};
+    use super::{
+        PaSpl, DECIBEL_REGISTER, DEVICE_ADDR, DEVICE_ID_REGISTERS, SCRATCH_REGISTER, VER_REGISTER,
+    };
     use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
 
     /// DEVICE_VER_MEMS_LTS: Published version for base features + audio spectrum analyzer.
     const DEVICE_VER_MEMS_LTS_ASA: u8 = 0x32;
+
+    #[test]
+    fn confirm_get_latest_decibel() {
+        let expectations = vec![I2cTransaction::write_read(
+            DEVICE_ADDR,
+            vec![DECIBEL_REGISTER],
+            vec![0x12],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let latest_decibel_val = pa_spl.get_latest_decibel().unwrap();
+        assert_eq!(0x12, latest_decibel_val);
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
 
     #[test]
     fn confirm_device_id() {
