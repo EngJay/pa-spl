@@ -29,6 +29,10 @@ impl<'a> BufWriter<'a> {
     pub fn as_str(&self) -> &str {
         core::str::from_utf8(&self.buf[..self.pos]).unwrap()
     }
+
+    pub fn reset(&mut self) {
+        self.pos = 0;
+    }
 }
 
 impl<'a> core::fmt::Write for BufWriter<'a> {
@@ -147,7 +151,7 @@ fn main() -> ! {
     let mut pa_spl = PaSpl::new(i2c);
 
     // Create a buffer able to be converted to a string.
-    let mut buffer: [u8; 9] = [0; 9];
+    let mut buffer: [u8; 8] = [0; 8];
     let mut buf_writer = BufWriter::new(&mut buffer);
 
     // Delay in milliseconds between UART writes.
@@ -155,14 +159,20 @@ fn main() -> ! {
     const UART_WRITE_DELAY_MS: u16 = 500;
 
     loop {
-        // Get SPL value from the sensor, then format and convert it.
+        // Reset the buffer at the start of each iteration
+        //
+        buf_writer.reset();
+
+        // Get SPL value from the sensor.
         //
         let spl = pa_spl.get_latest_decibel().unwrap();
-        let mut buf_writer = BufWriter::new(&mut buffer);
-        write!(buf_writer, "SPL: {}\r\n", spl).unwrap();
-        let spl_str = core::str::from_utf8(&buffer).unwrap();
 
-        // Write out to the UART.
+        // Format string with SPL value, then covert to string.
+        //
+        write!(buf_writer, "SPL: {}\r", spl).unwrap();
+        let spl_str = buf_writer.as_str();
+
+        // Write the string out to the UART.
         //
         uart4.write_str(spl_str).unwrap_or_else(|_| {
             loop {
