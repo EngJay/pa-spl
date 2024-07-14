@@ -21,7 +21,7 @@ Click to show Cargo.toml.
 
 ```toml
 [dependencies]
-pa-spl = 0.1.0
+pa-spl = 0.1
 ```
 
 </details>
