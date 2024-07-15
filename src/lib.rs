@@ -192,19 +192,29 @@ where
     /// let result = pa_spl.set_scratch(scratch_val);
     /// ```
     pub fn set_scratch(&mut self, value: u8) -> Result<(), Error<E>> {
-        self.i2c
-            .as_mut()
-            .ok_or(Error::NoI2cInstance)?
-            .write(DEVICE_ADDR, &[SCRATCH_REGISTER, value])
-            .map_err(Error::I2c)
+        self.write_byte(SCRATCH_REGISTER, value)
     }
 
     /// Destroys this driver and releases the I2C bus.
-    pub fn destroy(mut self) -> I2C {
+    pub fn destroy(&mut self) -> I2C {
         self.i2c
             .take()
             .expect("I2C instance has already been taken")
     }
+
+    /// Writes a single byte to an I2C register.
+    fn write_byte(&mut self, reg: u8, value: u8) -> Result<(), Error<E>> {
+        self.i2c
+            .as_mut()
+            .ok_or(Error::NoI2cInstance)?
+            .write(DEVICE_ADDR, &[reg, value])
+            .map_err(Error::I2c)
+    }
+
+    // Reads a single byte from an I2C register.
+    //
+
+    // Reads multiple bytes beginning at a start address.
 }
 
 #[cfg(test)]
