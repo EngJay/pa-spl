@@ -32,6 +32,7 @@ impl<'a> BufWriter<'a> {
 
     pub fn reset(&mut self) {
         self.pos = 0;
+        self.buf.fill(0);
     }
 }
 
