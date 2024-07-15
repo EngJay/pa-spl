@@ -88,14 +88,7 @@ where
     /// let latest_decibel_val = pa_spl.get_latest_decibel().unwrap();
     /// ```
     pub fn get_latest_decibel(&mut self) -> Result<u8, Error<E>> {
-        let mut buffer = [0; 1];
-        self.i2c
-            .as_mut()
-            .ok_or(Error::NoI2cInstance)?
-            .write_read(DEVICE_ADDR, &[DECIBEL_REGISTER], &mut buffer)
-            .map_err(Error::I2c)?;
-
-        Ok(buffer[0])
+        self.read_byte(DECIBEL_REGISTER)
     }
 
     /// Gets the 32-bit device ID from registers ID3-ID0.
@@ -143,14 +136,7 @@ where
     /// let firmware_version = pa_spl.get_firmware_version().unwrap();
     /// ```
     pub fn get_firmware_version(&mut self) -> Result<u8, Error<E>> {
-        let mut buffer = [0; 1];
-        self.i2c
-            .as_mut()
-            .ok_or(Error::NoI2cInstance)?
-            .write_read(DEVICE_ADDR, &[VER_REGISTER], &mut buffer)
-            .map_err(Error::I2c)?;
-
-        Ok(buffer[0])
+        self.read_byte(VER_REGISTER)
     }
 
     /// Gets the value stored in the scratch register.
@@ -167,14 +153,7 @@ where
     /// let val = pa_spl.get_scratch().unwrap();
     /// ```
     pub fn get_scratch(&mut self) -> Result<u8, Error<E>> {
-        let mut buffer = [0; 1];
-        self.i2c
-            .as_mut()
-            .ok_or(Error::NoI2cInstance)?
-            .write_read(DEVICE_ADDR, &[SCRATCH_REGISTER], &mut buffer)
-            .map_err(Error::I2c)?;
-
-        Ok(buffer[0])
+        self.read_byte(SCRATCH_REGISTER)
     }
 
     /// Sets the value stored in the scratch register.
@@ -202,7 +181,7 @@ where
             .expect("I2C instance has already been taken")
     }
 
-    /// Writes a single byte to an I2C register.
+    /// Writes a single byte to an I2C register of the device.
     fn write_byte(&mut self, reg: u8, value: u8) -> Result<(), Error<E>> {
         self.i2c
             .as_mut()
@@ -211,8 +190,16 @@ where
             .map_err(Error::I2c)
     }
 
-    // Reads a single byte from an I2C register.
-    //
+    // Reads a single byte from an I2C register of the device.
+    fn read_byte(&mut self, reg: u8) -> Result<u8, Error<E>> {
+        let mut buffer = [0; 1];
+        self.i2c
+            .as_mut()
+            .ok_or(Error::NoI2cInstance)?
+            .write_read(DEVICE_ADDR, &[reg], &mut buffer)
+            .map_err(Error::I2c)?;
+        Ok(buffer[0])
+    }
 
     // Reads multiple bytes beginning at a start address.
 }
