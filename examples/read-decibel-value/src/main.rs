@@ -10,8 +10,8 @@ use cortex_m_rt::entry;
 //
 // A breakpoint can be set on `rust_begin_unwind` to catch panics.
 //
+use pa_spl::PaSpl;
 use panic_halt as _;
-use pcb_artists_spl::PaSpl;
 use stm32f3xx_hal::{delay::Delay, i2c::I2c, pac, prelude::*, serial::config, serial::Serial};
 
 use core::fmt::Write;

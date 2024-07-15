@@ -6,7 +6,7 @@ use defmt_rtt as _; // defmt transport.
 use panic_probe as _; // Panic handler.
 use stm32f3xx_hal as _; // Memory layout.
 
-use pcb_artists_spl::{Error, PaSpl};
+use pa_spl::{Error, PaSpl};
 use stm32f3xx_hal::gpio::{
     gpiob::{PB6, PB7},
     Alternate, OpenDrain,
@@ -18,16 +18,16 @@ struct State {
 }
 
 // Define a newtype wrapper for Error<E>
-pub struct WrappedError<E>(pub pcb_artists_spl::Error<E>);
+pub struct WrappedError<E>(pub pa_spl::Error<E>);
 
 // Implement Format for WrappedError<E>
 impl<E: Format> Format for WrappedError<E> {
     fn format(&self, f: defmt::Formatter) {
         match &self.0 {
-            pcb_artists_spl::Error::I2c(err) => {
+            pa_spl::Error::I2c(err) => {
                 defmt::write!(f, "I2C Error: {:?}", err);
             }
-            pcb_artists_spl::Error::NoI2cInstance => {
+            pa_spl::Error::NoI2cInstance => {
                 defmt::write!(f, "No I2C Instance available");
             } // Handle other error variants as needed
         }
@@ -38,7 +38,7 @@ impl<E: Format> Format for WrappedError<E> {
 mod tests {
     use super::State;
     use defmt::{assert_eq, debug, error, unwrap};
-    use pcb_artists_spl::{Error, PaSpl};
+    use pa_spl::{Error, PaSpl};
     use stm32f3xx_hal::{gpio::gpiob, i2c::I2c, pac, prelude::*};
 
     #[init]
