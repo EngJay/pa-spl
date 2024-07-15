@@ -19,9 +19,13 @@ jobs:
       options: -h gha.ci.build
     steps:
       - uses: actions/checkout@v4
-      - name: Build (release)
+      - name: Build driver (release)
         run: |
           cargo build --release
+      - name: Build example
+        run: |
+          cargo build
+        working-directory: examples/read-decibel-value
 
   unit-tests:
     name: Unit Tests
