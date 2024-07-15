@@ -1,4 +1,4 @@
-# PCB Artists I2C Sound Level Module Driver
+# PCB Artists I2C SPL Module Driver
 
 ![Build Status](https://github.com/engjay/pcb-artists-i2c-spl-module-driver-rust/actions/workflows/ci.yaml/badge.svg)
 <!-- [![Latest Version]][crates.io] [![pa_spl msrv]][Rust 1.31] [![pa_spl msrv]][Rust 1.56] -->

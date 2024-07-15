@@ -3,7 +3,7 @@ authors = ["Jason Scott"]
 description = "A no_std driver for the PCB Artists SPL module"
 edition = "2021"
 keywords = []
-name = "pcb-artists-spl"
+name = "pa-spl"
 readme = "README.md"
 version = "0.1.0"
 

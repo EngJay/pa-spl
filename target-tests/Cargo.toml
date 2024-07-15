@@ -6,17 +6,17 @@ publish = false
 version = "0.1.0"
 
 # [[bin]]
-# name = "pcb-artists-spl-test"
+# name = "pa-spl-test"
 # test = true
 # bench = true
-# path = "tests/pcb-artists-spl.rs"
+# path = "tests/pa-spl.rs"
 
 # [bin]
-# name = "pcb-artists-spl-test"
+# name = "pa-spl-test"
 # path = "src/main.rs"          # Path to your main binary file
 
 [[test]]
-name = "pcb-artists-spl"
+name = "pa-spl"
 harness = false
 
 [dev-dependencies]
@@ -29,7 +29,7 @@ defmt = "0.3.8"
 defmt-rtt = "0.4.1"
 defmt-test = "0.3.2"
 panic-probe = { version = "0.3.2", features = ['print-defmt'] }
-pcb-artists-spl = { path = ".." }
+pa-spl = { path = ".." }
 
 [features]
 default = ['defmt-trace']
