@@ -67,7 +67,7 @@ Breakpoint 4, example_read_decibel_value::__cortex_m_rt_main_trampoline ()
 Continuing.
 ```
 
-Once running in the main loop, the SPL will be output via UART4. With a
+Once running in the main loop, the SPL will be output via UART4 at 2 Hz. With a
 TTL-to-USB converter, the output can be read into a shell. This output was
 received using
 [PySerial's Miniterm](https://pyserial.readthedocs.io/en/latest/tools.html#module-serial.tools.miniterm).
@@ -75,14 +75,4 @@ received using
 ```bash
 python -m serial.tools.miniterm /dev/cu.usbserial-A10KGFJI 115200
 SPL: 51
-SPL: 52
-SPL: 53
-SPL: 52
-SPL: 52
-SPL: 51
-SPL: 52
-SPL: 51
-SPL: 52
-
-... and so on...
 ```
