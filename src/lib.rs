@@ -1,5 +1,8 @@
 #![cfg_attr(not(test), no_std)]
 
+// extern crate alloc;
+
+// use alloc::vec::Vec;
 use embedded_hal::blocking::i2c;
 
 /// PCB Artists SPL Module I2C address.
@@ -107,11 +110,7 @@ where
     ///
     pub fn get_device_id(&mut self) -> Result<u32, Error<E>> {
         let mut buffer: [u8; 4] = [0; 4];
-        self.i2c
-            .as_mut()
-            .ok_or(Error::NoI2cInstance)?
-            .write_read(DEVICE_ADDR, &[DEVICE_ID_REGISTERS[0]], &mut buffer)
-            .map_err(Error::I2c)?;
+        self.read_bytes(DEVICE_ID_REGISTERS[0], &mut buffer)?;
 
         // Combine the bytes into a u32.
         let device_id: u32 = ((buffer[0] as u32) << 24)
@@ -190,7 +189,7 @@ where
             .map_err(Error::I2c)
     }
 
-    // Reads a single byte from an I2C register of the device.
+    /// Reads a single byte from an I2C register of the device.
     fn read_byte(&mut self, reg: u8) -> Result<u8, Error<E>> {
         let mut buffer = [0; 1];
         self.i2c
@@ -201,7 +200,15 @@ where
         Ok(buffer[0])
     }
 
-    // Reads multiple bytes beginning at a start address.
+    /// Read multiple bytes from a starting register.
+    fn read_bytes(&mut self, start_reg: u8, buffer: &mut [u8]) -> Result<(), Error<E>> {
+        self.i2c
+            .as_mut()
+            .ok_or(Error::NoI2cInstance)?
+            .write_read(DEVICE_ADDR, &[start_reg], buffer)
+            .map_err(Error::I2c)?;
+        Ok(())
+    }
 }
 
 #[cfg(test)]
