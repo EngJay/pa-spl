@@ -88,14 +88,7 @@ where
     /// let latest_decibel_val = pa_spl.get_latest_decibel().unwrap();
     /// ```
     pub fn get_latest_decibel(&mut self) -> Result<u8, Error<E>> {
-        let mut buffer = [0; 1];
-        self.i2c
-            .as_mut()
-            .ok_or(Error::NoI2cInstance)?
-            .write_read(DEVICE_ADDR, &[DECIBEL_REGISTER], &mut buffer)
-            .map_err(Error::I2c)?;
-
-        Ok(buffer[0])
+        self.read_byte(DECIBEL_REGISTER)
     }
 
     /// Gets the 32-bit device ID from registers ID3-ID0.
@@ -114,11 +107,7 @@ where
     ///
     pub fn get_device_id(&mut self) -> Result<u32, Error<E>> {
         let mut buffer: [u8; 4] = [0; 4];
-        self.i2c
-            .as_mut()
-            .ok_or(Error::NoI2cInstance)?
-            .write_read(DEVICE_ADDR, &[DEVICE_ID_REGISTERS[0]], &mut buffer)
-            .map_err(Error::I2c)?;
+        self.read_bytes(DEVICE_ID_REGISTERS[0], &mut buffer)?;
 
         // Combine the bytes into a u32.
         let device_id: u32 = ((buffer[0] as u32) << 24)
@@ -143,14 +132,7 @@ where
     /// let firmware_version = pa_spl.get_firmware_version().unwrap();
     /// ```
     pub fn get_firmware_version(&mut self) -> Result<u8, Error<E>> {
-        let mut buffer = [0; 1];
-        self.i2c
-            .as_mut()
-            .ok_or(Error::NoI2cInstance)?
-            .write_read(DEVICE_ADDR, &[VER_REGISTER], &mut buffer)
-            .map_err(Error::I2c)?;
-
-        Ok(buffer[0])
+        self.read_byte(VER_REGISTER)
     }
 
     /// Gets the value stored in the scratch register.
@@ -167,14 +149,7 @@ where
     /// let val = pa_spl.get_scratch().unwrap();
     /// ```
     pub fn get_scratch(&mut self) -> Result<u8, Error<E>> {
-        let mut buffer = [0; 1];
-        self.i2c
-            .as_mut()
-            .ok_or(Error::NoI2cInstance)?
-            .write_read(DEVICE_ADDR, &[SCRATCH_REGISTER], &mut buffer)
-            .map_err(Error::I2c)?;
-
-        Ok(buffer[0])
+        self.read_byte(SCRATCH_REGISTER)
     }
 
     /// Sets the value stored in the scratch register.
@@ -192,18 +167,44 @@ where
     /// let result = pa_spl.set_scratch(scratch_val);
     /// ```
     pub fn set_scratch(&mut self, value: u8) -> Result<(), Error<E>> {
-        self.i2c
-            .as_mut()
-            .ok_or(Error::NoI2cInstance)?
-            .write(DEVICE_ADDR, &[SCRATCH_REGISTER, value])
-            .map_err(Error::I2c)
+        self.write_byte(SCRATCH_REGISTER, value)
     }
 
     /// Destroys this driver and releases the I2C bus.
-    pub fn destroy(mut self) -> I2C {
+    pub fn destroy(&mut self) -> I2C {
         self.i2c
             .take()
             .expect("I2C instance has already been taken")
+    }
+
+    /// Writes a single byte to an I2C register of the device.
+    fn write_byte(&mut self, reg: u8, value: u8) -> Result<(), Error<E>> {
+        self.i2c
+            .as_mut()
+            .ok_or(Error::NoI2cInstance)?
+            .write(DEVICE_ADDR, &[reg, value])
+            .map_err(Error::I2c)
+    }
+
+    /// Reads a single byte from an I2C register of the device.
+    fn read_byte(&mut self, reg: u8) -> Result<u8, Error<E>> {
+        let mut buffer = [0; 1];
+        self.i2c
+            .as_mut()
+            .ok_or(Error::NoI2cInstance)?
+            .write_read(DEVICE_ADDR, &[reg], &mut buffer)
+            .map_err(Error::I2c)?;
+        Ok(buffer[0])
+    }
+
+    /// Read multiple bytes from a starting register.
+    fn read_bytes(&mut self, start_reg: u8, buffer: &mut [u8]) -> Result<(), Error<E>> {
+        self.i2c
+            .as_mut()
+            .ok_or(Error::NoI2cInstance)?
+            .write_read(DEVICE_ADDR, &[start_reg], buffer)
+            .map_err(Error::I2c)?;
+        Ok(())
     }
 }
 
