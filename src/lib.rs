@@ -6,6 +6,9 @@ use embedded_hal::blocking::i2c;
 const DEVICE_ADDR: u8 = 0x48;
 
 /// Device Registers.
+const REG_CONTROL: u8 = 0x06;
+const REG_CONTROL_DEFAULT: u8 = 0x02;
+
 const VER_REGISTER: u8 = 0x00;
 const DECIBEL_REGISTER: u8 = 0x0A;
 const DEVICE_ID_REGISTERS: [u8; 4] = [0x01, 0x02, 0x03, 0x04]; // ID3, ID2, ID1, ID0
@@ -210,6 +213,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::{REG_CONTROL, REG_CONTROL_DEFAULT};
+
     use super::{
         PaSpl, DECIBEL_REGISTER, DEVICE_ADDR, DEVICE_ID_REGISTERS, SCRATCH_REGISTER, VER_REGISTER,
     };
@@ -299,6 +304,23 @@ mod tests {
 
         let result = pa_spl.set_scratch(scratch_write_val);
         assert!(result.is_ok());
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    #[test]
+    fn confirm_get_control_register() {
+        let expectations = vec![I2cTransaction::write_read(
+            DEVICE_ADDR,
+            vec![REG_CONTROL],
+            vec![REG_CONTROL_DEFAULT], // 0b00000010
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let reg_control = pa_spl.get_firmware_version().unwrap();
+        assert_eq!(REG_CONTROL_DEFAULT, reg_control);
 
         let mut mock = pa_spl.destroy();
         mock.done();
