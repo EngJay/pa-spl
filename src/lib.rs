@@ -1,8 +1,5 @@
 #![cfg_attr(not(test), no_std)]
 
-// extern crate alloc;
-
-// use alloc::vec::Vec;
 use embedded_hal::blocking::i2c;
 
 /// PCB Artists SPL Module I2C address.
