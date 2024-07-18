@@ -6,7 +6,7 @@ use defmt_rtt as _; // defmt transport.
 use panic_probe as _; // Panic handler.
 use stm32f3xx_hal as _; // Memory layout.
 
-use pa_spl::{ControlRegister, Error, PaSpl};
+use pa_spl::{ControlRegister, Error, FilterSetting, PaSpl};
 use stm32f3xx_hal::gpio::{
     gpiob::{PB6, PB7},
     Alternate, OpenDrain,
@@ -38,7 +38,7 @@ impl<E: Format> Format for WrappedError<E> {
 mod tests {
     use super::State;
     use defmt::{assert_eq, debug, error, unwrap};
-    use pa_spl::{ControlRegister, Error, PaSpl, REG_CONTROL_DEFAULT};
+    use pa_spl::{ControlRegister, Error, FilterSetting, PaSpl, REG_CONTROL_DEFAULT};
     use stm32f3xx_hal::{gpio::gpiob, i2c::I2c, pac, prelude::*};
 
     #[init]
@@ -116,6 +116,21 @@ mod tests {
         const EXPECTED: ControlRegister = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
         let reg_control = state.pa_spl.get_control_register().unwrap();
         assert_eq!(EXPECTED, reg_control);
+    }
+
+    #[test]
+    fn confirm_set_control_register(state: &mut State) {
+        const EXPECTED_DEFAULT: ControlRegister = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
+        let mut reg_control = state.pa_spl.get_control_register().unwrap();
+        assert_eq!(EXPECTED_DEFAULT, reg_control);
+
+        reg_control.set_filter(FilterSetting::CWeighting);
+        let result = state.pa_spl.set_control_register(reg_control);
+        assert!(result.is_ok());
+
+        const EXPECTED_SET: ControlRegister = ControlRegister::from_bits(0b0000_0100);
+        let reg_control_set = state.pa_spl.get_control_register().unwrap();
+        assert_eq!(EXPECTED_SET, reg_control_set);
     }
 
     #[test]

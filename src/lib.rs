@@ -11,6 +11,25 @@ const DEVICE_ADDR: u8 = 0x48;
 const REG_CONTROL: u8 = 0x06;
 pub const REG_CONTROL_DEFAULT: u8 = 0b0000_0010;
 
+#[bitfield(u8)]
+#[derive(PartialEq, Eq, Format)]
+pub struct ControlRegister {
+    /// Set to power down the sensor
+    power_down: bool,
+    /// Filter selection
+    #[bits(2)]
+    filter_setting: FilterSetting,
+    /// Set to enable interrupt pin operation
+    interrupt_enable: bool,
+    /// Set to enable min/max level interrupts
+    interrupt_type: bool,
+    /// Set to enable line output (only for modules with external microphone)
+    enable_line_out: bool,
+    /// Padding
+    #[bits(2)]
+    __: u8,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FilterSetting {
     None = 0b00,
@@ -32,23 +51,11 @@ impl FilterSetting {
     }
 }
 
-#[bitfield(u8)]
-#[derive(PartialEq, Eq, Format)]
-pub struct ControlRegister {
-    /// Set to power down the sensor
-    power_down: bool,
-    /// Filter selection
-    #[bits(2)]
-    filter_setting: FilterSetting,
-    /// Set to enable interrupt pin operation
-    interrupt_enable: bool,
-    /// Set to enable min/max level interrupts
-    interrupt_type: bool,
-    /// Set to enable line output (only for modules with external microphone)
-    enable_line_out: bool,
-    /// Padding
-    #[bits(2)]
-    __: u8,
+impl ControlRegister {
+    /// Public setter for filter_setting
+    pub fn set_filter(&mut self, filter_setting: FilterSetting) {
+        self.set_filter_setting(filter_setting);
+    }
 }
 
 const VER_REGISTER: u8 = 0x00;
@@ -200,6 +207,25 @@ where
     /// ```
     pub fn get_scratch(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(SCRATCH_REGISTER)
+    }
+
+    /// Sets the control register.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// let reg_control = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
+    /// reg_control.set_filter_setting(FilterSetting::CWeighting);
+    /// let result = pa_spl.set_control_register(reg_control);
+    /// ```
+    pub fn set_control_register(&mut self, reg: ControlRegister) -> Result<(), Error<E>> {
+        self.write_byte(REG_CONTROL, reg.into_bits())
     }
 
     /// Sets the value stored in the scratch register.
@@ -393,7 +419,7 @@ mod tests {
         // Read-modify-write register.
         let mut reg_control = pa_spl.get_control_register().unwrap();
         reg_control.set_filter_setting(FilterSetting::CWeighting);
-        let result = pa_spl.set_control_register(reg_control).unwrap();
+        let result = pa_spl.set_control_register(reg_control);
         assert!(result.is_ok());
 
         let mut mock = pa_spl.destroy();
