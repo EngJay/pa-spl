@@ -126,7 +126,10 @@ where
         Self { i2c: Some(i2c) }
     }
 
-    /// Gets the latest sound intensity value in decibels averaged over the last Tavg time period.
+    /// Gets the latest SPL value in decibels from the DECIBELregister.
+    ///
+    /// The SPL value is averaged over the last Tavg time period that is stored
+    /// in the TAVG high byte register (0x07) and the TAVG low register (x08).
     ///
     /// # Errors
     ///
@@ -143,6 +146,19 @@ where
         self.read_byte(DECIBEL_REGISTER)
     }
 
+    /// Gets the CONTROL register.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// let reg_control = pa_spl.get_control_register().unwrap();
+    /// ```
     pub fn get_control_register(&mut self) -> Result<ControlRegister, Error<E>> {
         let control_reg_raw = self.read_byte(REG_CONTROL)?;
         Ok(ControlRegister::from_bits(control_reg_raw))
@@ -175,7 +191,7 @@ where
         Ok(device_id)
     }
 
-    /// Gets the firmware version.
+    /// Gets the firmware version from the VERSION register.
     ///
     /// # Errors
     ///
@@ -192,7 +208,7 @@ where
         self.read_byte(VER_REGISTER)
     }
 
-    /// Gets the value stored in the scratch register.
+    /// Gets the value stored in the SCRATCH register.
     ///
     /// # Errors
     ///
@@ -209,7 +225,7 @@ where
         self.read_byte(SCRATCH_REGISTER)
     }
 
-    /// Sets the control register.
+    /// Sets the CONTROL register.
     ///
     /// # Errors
     ///
@@ -228,7 +244,7 @@ where
         self.write_byte(REG_CONTROL, reg.into_bits())
     }
 
-    /// Sets the value stored in the scratch register.
+    /// Sets the value stored in the SCRATCH register.
     ///
     /// # Errors
     ///
