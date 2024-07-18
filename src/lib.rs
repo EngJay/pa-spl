@@ -15,7 +15,7 @@ pub const REG_CONTROL_DEFAULT: u8 = 0b0000_0010;
 pub enum FilterSetting {
     None = 0b00,
     AWeighting = 0b01,
-    CWEighting = 0b10,
+    CWeighting = 0b10,
 }
 
 impl FilterSetting {
@@ -23,7 +23,7 @@ impl FilterSetting {
         match bits {
             0b00 => Self::None,
             0b01 => Self::AWeighting,
-            _ => Self::CWEighting,
+            _ => Self::CWeighting,
         }
     }
 
