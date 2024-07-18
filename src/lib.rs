@@ -260,7 +260,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::{ControlRegister, REG_CONTROL, REG_CONTROL_DEFAULT};
+    use crate::{ControlRegister, FilterSetting, REG_CONTROL, REG_CONTROL_DEFAULT};
 
     use super::{
         PaSpl, DECIBEL_REGISTER, DEVICE_ADDR, DEVICE_ID_REGISTERS, SCRATCH_REGISTER, VER_REGISTER,
@@ -369,6 +369,32 @@ mod tests {
         let reg_control = pa_spl.get_control_register().unwrap();
         let control_register_default_bits = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
         assert_eq!(control_register_default_bits, reg_control);
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    #[test]
+    fn confirm_set_control_register() {
+        let expectations = vec![
+            I2cTransaction::write_read(
+                DEVICE_ADDR,
+                vec![REG_CONTROL],
+                vec![REG_CONTROL_DEFAULT], // 0b0000_0010
+            ),
+            I2cTransaction::write(
+                DEVICE_ADDR,
+                vec![REG_CONTROL, 0b0000_0100], // 0b0000_0100
+            ),
+        ];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        // Read-modify-write register.
+        let mut reg_control = pa_spl.get_control_register().unwrap();
+        reg_control.set_filter_setting(FilterSetting::CWeighting);
+        let result = pa_spl.set_control_register(reg_control).unwrap();
+        assert!(result.is_ok());
 
         let mut mock = pa_spl.destroy();
         mock.done();
