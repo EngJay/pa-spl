@@ -1,5 +1,7 @@
 #![cfg_attr(not(test), no_std)]
 
+use bitfield_struct::bitfield;
+use defmt::Format;
 use embedded_hal::blocking::i2c;
 
 /// PCB Artists SPL Module I2C address.
@@ -7,7 +9,47 @@ const DEVICE_ADDR: u8 = 0x48;
 
 /// Device Registers.
 const REG_CONTROL: u8 = 0x06;
-const REG_CONTROL_DEFAULT: u8 = 0x02;
+pub const REG_CONTROL_DEFAULT: u8 = 0b0000_0010;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FilterSetting {
+    None = 0b00,
+    AWeighting = 0b01,
+    CWEighting = 0b10,
+}
+
+impl FilterSetting {
+    const fn from_bits(bits: u8) -> Self {
+        match bits {
+            0b00 => Self::None,
+            0b01 => Self::AWeighting,
+            _ => Self::CWEighting,
+        }
+    }
+
+    const fn into_bits(self) -> u8 {
+        self as _
+    }
+}
+
+#[bitfield(u8)]
+#[derive(PartialEq, Eq, Format)]
+pub struct ControlRegister {
+    /// Set to power down the sensor
+    power_down: bool,
+    /// Filter selection
+    #[bits(2)]
+    filter_setting: FilterSetting,
+    /// Set to enable interrupt pin operation
+    interrupt_enable: bool,
+    /// Set to enable min/max level interrupts
+    interrupt_type: bool,
+    /// Set to enable line output (only for modules with external microphone)
+    enable_line_out: bool,
+    /// Padding
+    #[bits(2)]
+    __: u8,
+}
 
 const VER_REGISTER: u8 = 0x00;
 const DECIBEL_REGISTER: u8 = 0x0A;
@@ -92,6 +134,11 @@ where
     /// ```
     pub fn get_latest_decibel(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(DECIBEL_REGISTER)
+    }
+
+    pub fn get_control_register(&mut self) -> Result<ControlRegister, Error<E>> {
+        let control_reg_raw = self.read_byte(REG_CONTROL)?;
+        Ok(ControlRegister::from_bits(control_reg_raw))
     }
 
     /// Gets the 32-bit device ID from registers ID3-ID0.
@@ -213,7 +260,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::{REG_CONTROL, REG_CONTROL_DEFAULT};
+    use crate::{ControlRegister, REG_CONTROL, REG_CONTROL_DEFAULT};
 
     use super::{
         PaSpl, DECIBEL_REGISTER, DEVICE_ADDR, DEVICE_ID_REGISTERS, SCRATCH_REGISTER, VER_REGISTER,
@@ -314,13 +361,14 @@ mod tests {
         let expectations = vec![I2cTransaction::write_read(
             DEVICE_ADDR,
             vec![REG_CONTROL],
-            vec![REG_CONTROL_DEFAULT], // 0b00000010
+            vec![REG_CONTROL_DEFAULT], // 0b0000_0010
         )];
         let i2c_mock = I2cMock::new(&expectations);
         let mut pa_spl = PaSpl::new(i2c_mock);
 
-        let reg_control = pa_spl.get_firmware_version().unwrap();
-        assert_eq!(REG_CONTROL_DEFAULT, reg_control);
+        let reg_control = pa_spl.get_control_register().unwrap();
+        let control_register_default_bits = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
+        assert_eq!(control_register_default_bits, reg_control);
 
         let mut mock = pa_spl.destroy();
         mock.done();
