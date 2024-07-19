@@ -44,7 +44,7 @@ pub struct ControlRegister {
     interrupt_type: bool,
     /// Set to enable line output (only for modules with external microphone)
     enable_line_out: bool,
-    /// Padding
+    /// Padding for reserved bits
     #[bits(2)]
     __: u8,
 }
@@ -75,6 +75,26 @@ impl ControlRegister {
     pub fn set_filter(&mut self, filter_setting: FilterSetting) {
         self.set_filter_setting(filter_setting);
     }
+}
+
+const REG_RESET: u8 = 0x09;
+pub const REG_RESET_DEFAULT: u8 = 0b0000_0000;
+
+#[bitfield(u8)]
+#[derive(PartialEq, Eq, Format)]
+pub struct ResetRegister {
+    /// Set this bit to clear interrupt signal and set INT pin to high-Z; this bit is self-clearing
+    clear_interrupt: bool,
+    /// Set this bit to clear the max and min dB values stored in MAX and MIN registers; t his bit is self-clearing
+    clear_min_max: bool,
+    /// Set this bit to clear the most recent 100 decibel values stored in history registers; this bit is self-clearing.
+    clear_history: bool,
+    /// Set this bit to perform a soft system reset and restore settings to defaults; this bit is self-clearing.
+    // NOTE: This bit must be set to wake up the device from sleep mode.
+    system_reset: bool,
+    /// Padding for reserved bits
+    #[bits(4)]
+    __: u8,
 }
 
 const VER_REGISTER: u8 = 0x00;
@@ -244,6 +264,24 @@ where
         self.read_byte(SCRATCH_REGISTER)
     }
 
+    /// Soft resets the sensor.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// let result = pa_spl.reset();
+    /// ```
+    pub fn reset(&mut self) -> Result<(), Error<E>> {
+        let reg_reset = ResetRegister::new().with_system_reset(true);
+        self.write_byte(REG_RESET, reg_reset.into_bits())
+    }
+
     /// Sets the CONTROL register.
     ///
     /// # Errors
@@ -321,7 +359,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::{ControlRegister, FilterSetting, REG_CONTROL, REG_CONTROL_DEFAULT};
+    use crate::{ControlRegister, FilterSetting, REG_CONTROL, REG_CONTROL_DEFAULT, REG_RESET};
 
     use super::{
         PaSpl, DECIBEL_REGISTER, DEVICE_ADDR, DEVICE_ID_REGISTERS, SCRATCH_REGISTER, VER_REGISTER,
@@ -455,6 +493,22 @@ mod tests {
         let mut reg_control = pa_spl.get_control_register().unwrap();
         reg_control.set_filter_setting(FilterSetting::CWeighting);
         let result = pa_spl.set_control_register(reg_control);
+        assert!(result.is_ok());
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    #[test]
+    fn confirm_reset() {
+        let expectations = vec![I2cTransaction::write(
+            DEVICE_ADDR,
+            vec![REG_RESET, 0b0000_1000],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let result = pa_spl.reset();
         assert!(result.is_ok());
 
         let mut mock = pa_spl.destroy();
