@@ -37,6 +37,7 @@ impl<E: Format> Format for WrappedError<E> {
 #[defmt_test::tests]
 mod tests {
     use super::State;
+    use crate::delay_ms;
     use defmt::{assert_eq, debug, error, unwrap};
     use pa_spl::{ControlRegister, Error, FilterSetting, PaSpl, REG_CONTROL_DEFAULT};
     use stm32f3xx_hal::{gpio::gpiob, i2c::I2c, pac, prelude::*};
@@ -78,6 +79,14 @@ mod tests {
         State { pa_spl }
     }
 
+    #[after_each]
+    fn after_each(state: &mut State) {
+        let _ = state.pa_spl.reset();
+        // Short delay to allow for reset and settle.
+        let ms = 3;
+        delay_ms(ms);
+    }
+
     #[test]
     fn confirm_read_latest_decibel(state: &mut State) {
         // The value returned is a sensed value, so this only tests that a valid
@@ -99,6 +108,21 @@ mod tests {
         const EXPECTED: u32 = 1867099226; // TODO Device ID is not published - need to verify somehow, #5.
         let device_id = state.pa_spl.get_device_id().unwrap();
         assert_eq!(EXPECTED, device_id);
+    }
+
+    #[test]
+    fn confirm_reset(state: &mut State) {
+        let result = state.pa_spl.reset();
+        assert!(result.is_ok());
+
+        // Short delay to allow for reset and settle.
+        let ms = 3;
+        delay_ms(ms);
+
+        // Confirm that the settings have been reset to the default.
+        const EXPECTED: ControlRegister = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
+        let reg_control = state.pa_spl.get_control_register().unwrap();
+        assert_eq!(EXPECTED, reg_control);
     }
 
     #[test]
@@ -136,5 +160,13 @@ mod tests {
     #[test]
     fn sanity_check() {
         assert!(true);
+    }
+}
+
+/// Busy-wait loop to create a delay.
+fn delay_ms(ms: u32) {
+    let cycles_per_ms = 8_000; // Assuming an 8 MHz clock (stm32f4-hal default for 303xc)
+    for _ in 0..(ms * cycles_per_ms) {
+        cortex_m::asm::nop(); // No operation (NOP) to prevent optimization
     }
 }
