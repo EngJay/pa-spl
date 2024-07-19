@@ -11,6 +11,25 @@ const DEVICE_ADDR: u8 = 0x48;
 const REG_CONTROL: u8 = 0x06;
 pub const REG_CONTROL_DEFAULT: u8 = 0b0000_0010;
 
+#[cfg(not(feature = "external_mic"))]
+#[bitfield(u8)]
+#[derive(PartialEq, Eq, Format)]
+pub struct ControlRegister {
+    /// Set to power down the sensor
+    power_down: bool,
+    /// Filter selection
+    #[bits(2)]
+    filter_setting: FilterSetting,
+    /// Set to enable interrupt pin operation
+    interrupt_enable: bool,
+    /// Set to enable min/max level interrupts
+    interrupt_type: bool,
+    /// Padding
+    #[bits(3)]
+    __: u8,
+}
+
+#[cfg(feature = "external_mic")]
 #[bitfield(u8)]
 #[derive(PartialEq, Eq, Format)]
 pub struct ControlRegister {

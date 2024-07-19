@@ -14,3 +14,6 @@ embedded-hal = "0.2.7"
 
 [dev-dependencies]
 embedded-hal-mock = "0.11.1"
+
+[features]
+external_mic = []
