@@ -7,9 +7,10 @@ use embedded_hal::blocking::i2c;
 /// PCB Artists SPL Module I2C address.
 const DEVICE_ADDR: u8 = 0x48;
 
-/// Device Registers.
+/// CONTROL register address.
 const REG_CONTROL: u8 = 0x06;
-pub const REG_CONTROL_DEFAULT: u8 = 0b0000_0010;
+/// CONTROL register default value.
+pub const REG_CONTROL_DEFAULT: u8 = 0x02;
 
 #[cfg(not(feature = "external_mic"))]
 #[bitfield(u8)]
@@ -51,8 +52,11 @@ pub struct ControlRegister {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FilterSetting {
+    /// No filter
     None = 0b00,
+    /// A-weighting
     AWeighting = 0b01,
+    /// C-weighting
     CWeighting = 0b10,
 }
 
@@ -71,13 +75,18 @@ impl FilterSetting {
 }
 
 impl ControlRegister {
-    /// Public setter for filter_setting
+    /// Sets the filter setting
+    ///
+    /// Sets the filter setting bits in ControlRegister for a filter defined in FilterSetting.
+    ///
     pub fn set_filter(&mut self, filter_setting: FilterSetting) {
         self.set_filter_setting(filter_setting);
     }
 }
 
+/// RESET register address.
 const REG_RESET: u8 = 0x09;
+/// RESET register default value.
 pub const REG_RESET_DEFAULT: u8 = 0x00;
 
 #[bitfield(u8)]
@@ -90,22 +99,31 @@ pub struct ResetRegister {
     /// Set this bit to clear the most recent 100 decibel values stored in history registers; this bit is self-clearing.
     clear_history: bool,
     /// Set this bit to perform a soft system reset and restore settings to defaults; this bit is self-clearing.
-    // NOTE: This bit must be set to wake up the device from sleep mode.
+    /// NOTE: This bit must be set to wake up the device from sleep mode.
     system_reset: bool,
     /// Padding for reserved bits
     #[bits(4)]
     __: u8,
 }
 
-const VER_REGISTER: u8 = 0x00;
-const DECIBEL_REGISTER: u8 = 0x0A;
-const DEVICE_ID_REGISTERS: [u8; 4] = [0x01, 0x02, 0x03, 0x04]; // ID3, ID2, ID1, ID0
-const SCRATCH_REGISTER: u8 = 0x05;
+/// VESION register address.
+const REG_VERSION: u8 = 0x00;
+/// DECIBEL register address.
+const REG_DECIBEL: u8 = 0x0A;
+/// Device ID registers, ID3, ID2, ID1, ID0
+const REGS_DEVICE_ID: [u8; 4] = [0x01, 0x02, 0x03, 0x04];
+/// SCRATCH register address.
+const REG_SCRATCH: u8 = 0x05;
+/// TAVG register high byte address.
 const REG_TAVG_HIGH: u8 = 0x07;
-const REG_TAVG_HIGH_DEFAULT: u8 = 0x03;
+/// TAVG register high byte default value.
+const REG_TAVG_HIGH_DEFAULT_BYTE: u8 = 0x03;
+/// TAVG register low byte address.
 const REG_TAVG_LOW: u8 = 0x08;
-const REG_TAVG_LOW_DEFAULT: u8 = 0xE8;
-const REG_AVERAGING_TIME_DEFAULT: u16 = 1000;
+/// TAVG register low byte default value.
+const REG_TAVG_LOW_DEFAULT_BYTE: u8 = 0xE8;
+/// Default value for averaging time in ms.
+pub const REG_AVERAGING_TIME_DEFAULT_MS: u16 = 1000;
 
 /// A PA SPL Module on the I2C bus `I2C`.
 pub struct PaSpl<I2C>
@@ -170,7 +188,7 @@ where
         Self { i2c: Some(i2c) }
     }
 
-    /// Gets the 16-bit averaging time from registers TAVG high and TAVG (0x07 and 0x08).
+    /// Gets the 16-bit averaging time in ms from registers TAVG high and TAVG (0x07 and 0x08).
     ///
     /// # Errors
     ///
@@ -181,7 +199,7 @@ where
     /// # Examples
     ///
     /// ```ignore
-    /// let avg_time = pa_spl.get_avg_time().unwrap();
+    /// let avg_time_ms = pa_spl.get_avg_time().unwrap();
     /// ```
     ///
     pub fn get_avg_time(&mut self) -> Result<u16, Error<E>> {
@@ -189,9 +207,9 @@ where
         self.read_bytes(REG_TAVG_HIGH, &mut buffer)?;
 
         // Combine the bytes into a u16.
-        let avg_time = ((buffer[0] as u16) << 8) | (buffer[1] as u16);
+        let avg_time_ms = ((buffer[0] as u16) << 8) | (buffer[1] as u16);
 
-        Ok(avg_time)
+        Ok(avg_time_ms)
     }
 
     /// Gets the latest SPL value in decibels from the DECIBELregister.
@@ -211,7 +229,7 @@ where
     /// let latest_decibel_val = pa_spl.get_latest_decibel().unwrap();
     /// ```
     pub fn get_latest_decibel(&mut self) -> Result<u8, Error<E>> {
-        self.read_byte(DECIBEL_REGISTER)
+        self.read_byte(REG_DECIBEL)
     }
 
     /// Gets the CONTROL register.
@@ -248,7 +266,7 @@ where
     ///
     pub fn get_device_id(&mut self) -> Result<u32, Error<E>> {
         let mut buffer: [u8; 4] = [0; 4];
-        self.read_bytes(DEVICE_ID_REGISTERS[0], &mut buffer)?;
+        self.read_bytes(REGS_DEVICE_ID[0], &mut buffer)?;
 
         // Combine the bytes into a u32.
         let device_id: u32 = ((buffer[0] as u32) << 24)
@@ -273,7 +291,7 @@ where
     /// let firmware_version = pa_spl.get_firmware_version().unwrap();
     /// ```
     pub fn get_firmware_version(&mut self) -> Result<u8, Error<E>> {
-        self.read_byte(VER_REGISTER)
+        self.read_byte(REG_VERSION)
     }
 
     /// Gets the value stored in the SCRATCH register.
@@ -290,7 +308,7 @@ where
     /// let val = pa_spl.get_scratch().unwrap();
     /// ```
     pub fn get_scratch(&mut self) -> Result<u8, Error<E>> {
-        self.read_byte(SCRATCH_REGISTER)
+        self.read_byte(REG_SCRATCH)
     }
 
     /// Soft resets the sensor.
@@ -347,7 +365,7 @@ where
     /// let result = pa_spl.set_scratch(scratch_val);
     /// ```
     pub fn set_scratch(&mut self, value: u8) -> Result<(), Error<E>> {
-        self.write_byte(SCRATCH_REGISTER, value)
+        self.write_byte(REG_SCRATCH, value)
     }
 
     /// Destroys this driver and releases the I2C bus.
@@ -391,14 +409,12 @@ where
 #[cfg(test)]
 mod tests {
     use crate::{
-        ControlRegister, FilterSetting, REG_AVERAGING_TIME_DEFAULT, REG_CONTROL,
-        REG_CONTROL_DEFAULT, REG_RESET, REG_TAVG_HIGH, REG_TAVG_HIGH_DEFAULT, REG_TAVG_LOW,
-        REG_TAVG_LOW_DEFAULT,
+        ControlRegister, FilterSetting, REG_AVERAGING_TIME_DEFAULT_MS, REG_CONTROL,
+        REG_CONTROL_DEFAULT, REG_RESET, REG_TAVG_HIGH, REG_TAVG_HIGH_DEFAULT_BYTE,
+        REG_TAVG_LOW_DEFAULT_BYTE,
     };
 
-    use super::{
-        PaSpl, DECIBEL_REGISTER, DEVICE_ADDR, DEVICE_ID_REGISTERS, SCRATCH_REGISTER, VER_REGISTER,
-    };
+    use super::{PaSpl, DEVICE_ADDR, REGS_DEVICE_ID, REG_DECIBEL, REG_SCRATCH, REG_VERSION};
     use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
 
     /// DEVICE_VER_MEMS_LTS: Published version for base features + audio spectrum analyzer.
@@ -408,7 +424,7 @@ mod tests {
     fn confirm_get_latest_decibel() {
         let expectations = vec![I2cTransaction::write_read(
             DEVICE_ADDR,
-            vec![DECIBEL_REGISTER],
+            vec![REG_DECIBEL],
             vec![0x12],
         )];
         let i2c_mock = I2cMock::new(&expectations);
@@ -425,7 +441,7 @@ mod tests {
     fn confirm_device_id() {
         let expectations = vec![I2cTransaction::write_read(
             DEVICE_ADDR,
-            vec![DEVICE_ID_REGISTERS[0]],
+            vec![REGS_DEVICE_ID[0]],
             vec![0x01, 0x02, 0x03, 0x04],
         )];
         let i2c_mock = I2cMock::new(&expectations);
@@ -442,7 +458,7 @@ mod tests {
     fn confirm_firmware_version() {
         let expectations = vec![I2cTransaction::write_read(
             DEVICE_ADDR,
-            vec![VER_REGISTER],
+            vec![REG_VERSION],
             vec![DEVICE_VER_MEMS_LTS_ASA],
         )];
         let i2c_mock = I2cMock::new(&expectations);
@@ -459,7 +475,7 @@ mod tests {
     fn confirm_get_scratch() {
         let expectations = vec![I2cTransaction::write_read(
             DEVICE_ADDR,
-            vec![SCRATCH_REGISTER],
+            vec![REG_SCRATCH],
             vec![0x99],
         )];
         let i2c_mock = I2cMock::new(&expectations);
@@ -478,7 +494,7 @@ mod tests {
         let scratch_write_val: u8 = 0x99;
         let expectations = vec![I2cTransaction::write(
             DEVICE_ADDR,
-            vec![SCRATCH_REGISTER, scratch_write_val],
+            vec![REG_SCRATCH, scratch_write_val],
         )];
         let i2c_mock = I2cMock::new(&expectations);
         let mut pa_spl = PaSpl::new(i2c_mock);
@@ -495,13 +511,13 @@ mod tests {
         let expectations = vec![I2cTransaction::write_read(
             DEVICE_ADDR,
             vec![REG_TAVG_HIGH],
-            vec![REG_TAVG_HIGH_DEFAULT, REG_TAVG_LOW_DEFAULT],
+            vec![REG_TAVG_HIGH_DEFAULT_BYTE, REG_TAVG_LOW_DEFAULT_BYTE],
         )];
         let i2c_mock = I2cMock::new(&expectations);
         let mut pa_spl = PaSpl::new(i2c_mock);
 
-        let averaging_time = pa_spl.get_avg_time().unwrap();
-        assert_eq!(REG_AVERAGING_TIME_DEFAULT, averaging_time);
+        let averaging_time_ms = pa_spl.get_avg_time().unwrap();
+        assert_eq!(REG_AVERAGING_TIME_DEFAULT_MS, averaging_time_ms);
 
         let mut mock = pa_spl.destroy();
         mock.done();
