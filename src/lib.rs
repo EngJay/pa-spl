@@ -135,7 +135,7 @@ pub enum Error<E> {
     I2c(E),
     /// No I2C instance available.
     NoI2cInstance,
-    // Buffer overflow.
+    /// Buffer overflow.
     BufferOverflow,
 }
 
