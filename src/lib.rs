@@ -472,6 +472,29 @@ mod tests {
     }
 
     #[test]
+    fn confirm_set_avg_time() {
+        let new_avg_time_ms: u16 = 125;
+        let tavg_high_expected_byte: u8 = 0x00;
+        let tavg_low_expected_byte: u8 = 0x7D;
+        let expectations = vec![I2cTransaction::write(
+            DEVICE_ADDR,
+            vec![
+                REG_TAVG_HIGH,
+                tavg_high_expected_byte,
+                tavg_low_expected_byte,
+            ],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let result = pa_spl.set_avg_time(new_avg_time_ms);
+        assert!(result.is_ok());
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    #[test]
     fn confirm_get_scratch() {
         let expectations = vec![I2cTransaction::write_read(
             DEVICE_ADDR,
