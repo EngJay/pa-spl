@@ -78,7 +78,7 @@ impl ControlRegister {
 }
 
 const REG_RESET: u8 = 0x09;
-pub const REG_RESET_DEFAULT: u8 = 0b0000_0000;
+pub const REG_RESET_DEFAULT: u8 = 0x00;
 
 #[bitfield(u8)]
 #[derive(PartialEq, Eq, Format)]
@@ -101,6 +101,11 @@ const VER_REGISTER: u8 = 0x00;
 const DECIBEL_REGISTER: u8 = 0x0A;
 const DEVICE_ID_REGISTERS: [u8; 4] = [0x01, 0x02, 0x03, 0x04]; // ID3, ID2, ID1, ID0
 const SCRATCH_REGISTER: u8 = 0x05;
+const REG_TAVG_HIGH: u8 = 0x07;
+const REG_TAVG_HIGH_DEFAULT: u8 = 0x03;
+const REG_TAVG_LOW: u8 = 0x08;
+const REG_TAVG_LOW_DEFAULT: u8 = 0xE8;
+const REG_AVERAGING_TIME_DEFAULT: u16 = 1000;
 
 /// A PA SPL Module on the I2C bus `I2C`.
 pub struct PaSpl<I2C>
@@ -163,6 +168,30 @@ where
     /// ```
     pub fn new(i2c: I2C) -> Self {
         Self { i2c: Some(i2c) }
+    }
+
+    /// Gets the 16-bit averaging time from registers TAVG high and TAVG (0x07 and 0x08).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// let avg_time = pa_spl.get_avg_time().unwrap();
+    /// ```
+    ///
+    pub fn get_avg_time(&mut self) -> Result<u16, Error<E>> {
+        let mut buffer: [u8; 2] = [0; 2];
+        self.read_bytes(REG_TAVG_HIGH, &mut buffer)?;
+
+        // Combine the bytes into a u16.
+        let avg_time = ((buffer[0] as u16) << 8) | (buffer[1] as u16);
+
+        Ok(avg_time)
     }
 
     /// Gets the latest SPL value in decibels from the DECIBELregister.
@@ -361,7 +390,11 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::{ControlRegister, FilterSetting, REG_CONTROL, REG_CONTROL_DEFAULT, REG_RESET};
+    use crate::{
+        ControlRegister, FilterSetting, REG_AVERAGING_TIME_DEFAULT, REG_CONTROL,
+        REG_CONTROL_DEFAULT, REG_RESET, REG_TAVG_HIGH, REG_TAVG_HIGH_DEFAULT, REG_TAVG_LOW,
+        REG_TAVG_LOW_DEFAULT,
+    };
 
     use super::{
         PaSpl, DECIBEL_REGISTER, DEVICE_ADDR, DEVICE_ID_REGISTERS, SCRATCH_REGISTER, VER_REGISTER,
@@ -452,6 +485,23 @@ mod tests {
 
         let result = pa_spl.set_scratch(scratch_write_val);
         assert!(result.is_ok());
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    #[test]
+    fn confirm_get_avg_time() {
+        let expectations = vec![I2cTransaction::write_read(
+            DEVICE_ADDR,
+            vec![REG_TAVG_HIGH],
+            vec![REG_TAVG_HIGH_DEFAULT, REG_TAVG_LOW_DEFAULT],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let averaging_time = pa_spl.get_avg_time().unwrap();
+        assert_eq!(REG_AVERAGING_TIME_DEFAULT, averaging_time);
 
         let mut mock = pa_spl.destroy();
         mock.done();
