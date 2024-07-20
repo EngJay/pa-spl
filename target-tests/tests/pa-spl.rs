@@ -136,6 +136,13 @@ mod tests {
     }
 
     #[test]
+    fn confirm_get_avg_time(state: &mut State) {
+        const EXPECTED: u16 = 1000;
+        let avg_time = state.pa_spl.get_avg_time().unwrap();
+        assert_eq!(EXPECTED, avg_time);
+    }
+
+    #[test]
     fn confirm_get_control_register(state: &mut State) {
         const EXPECTED: ControlRegister = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
         let reg_control = state.pa_spl.get_control_register().unwrap();
