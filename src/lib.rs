@@ -209,26 +209,6 @@ where
         Ok(avg_time_ms)
     }
 
-    /// Gets the latest SPL value in decibels from the DECIBELregister.
-    ///
-    /// The SPL value is averaged over the last Tavg time period that is stored
-    /// in the TAVG high byte register (0x07) and the TAVG low register (x08).
-    ///
-    /// # Errors
-    ///
-    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
-    ///
-    /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```ignore
-    /// let latest_decibel_val = pa_spl.get_latest_decibel().unwrap();
-    /// ```
-    pub fn get_latest_decibel(&mut self) -> Result<u8, Error<E>> {
-        self.read_byte(REG_DECIBEL)
-    }
-
     /// Gets the CONTROL register.
     ///
     /// # Errors
@@ -289,6 +269,26 @@ where
     /// ```
     pub fn get_firmware_version(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_VERSION)
+    }
+
+    /// Gets the latest SPL value in decibels from the DECIBELregister.
+    ///
+    /// The SPL value is averaged over the last Tavg time period that is stored
+    /// in the TAVG high byte register (0x07) and the TAVG low register (x08).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// let latest_decibel_val = pa_spl.get_latest_decibel().unwrap();
+    /// ```
+    pub fn get_latest_decibel(&mut self) -> Result<u8, Error<E>> {
+        self.read_byte(REG_DECIBEL)
     }
 
     /// Gets the value stored in the SCRATCH register.
@@ -457,23 +457,6 @@ mod tests {
     const REG_TAVG_LOW_DEFAULT_BYTE: u8 = 0xE8;
 
     #[test]
-    fn confirm_get_latest_decibel() {
-        let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
-            vec![REG_DECIBEL],
-            vec![0x12],
-        )];
-        let i2c_mock = I2cMock::new(&expectations);
-        let mut pa_spl = PaSpl::new(i2c_mock);
-
-        let latest_decibel_val = pa_spl.get_latest_decibel().unwrap();
-        assert_eq!(0x12, latest_decibel_val);
-
-        let mut mock = pa_spl.destroy();
-        mock.done();
-    }
-
-    #[test]
     fn confirm_device_id() {
         let expectations = vec![I2cTransaction::write_read(
             DEVICE_ADDR,
@@ -502,64 +485,6 @@ mod tests {
 
         let version = pa_spl.get_firmware_version().unwrap();
         assert_eq!(DEVICE_VER_MEMS_LTS_ASA, version);
-
-        let mut mock = pa_spl.destroy();
-        mock.done();
-    }
-
-    #[test]
-    fn confirm_set_avg_time() {
-        let new_avg_time_ms: u16 = 125;
-        let tavg_high_expected_byte: u8 = 0x00;
-        let tavg_low_expected_byte: u8 = 0x7D;
-        let expectations = vec![I2cTransaction::write(
-            DEVICE_ADDR,
-            vec![
-                REG_TAVG_HIGH,
-                tavg_high_expected_byte,
-                tavg_low_expected_byte,
-            ],
-        )];
-        let i2c_mock = I2cMock::new(&expectations);
-        let mut pa_spl = PaSpl::new(i2c_mock);
-
-        let result = pa_spl.set_avg_time(new_avg_time_ms);
-        assert!(result.is_ok());
-
-        let mut mock = pa_spl.destroy();
-        mock.done();
-    }
-
-    #[test]
-    fn confirm_get_scratch() {
-        let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
-            vec![REG_SCRATCH],
-            vec![0x99],
-        )];
-        let i2c_mock = I2cMock::new(&expectations);
-        let mut pa_spl = PaSpl::new(i2c_mock);
-
-        let scratch_write_val: u8 = 0x99;
-        let scratch_read_val = pa_spl.get_scratch().unwrap();
-        assert_eq!(scratch_write_val, scratch_read_val);
-
-        let mut mock = pa_spl.destroy();
-        mock.done();
-    }
-
-    #[test]
-    fn confirm_set_scratch() {
-        let scratch_write_val: u8 = 0x99;
-        let expectations = vec![I2cTransaction::write(
-            DEVICE_ADDR,
-            vec![REG_SCRATCH, scratch_write_val],
-        )];
-        let i2c_mock = I2cMock::new(&expectations);
-        let mut pa_spl = PaSpl::new(i2c_mock);
-
-        let result = pa_spl.set_scratch(scratch_write_val);
-        assert!(result.is_ok());
 
         let mut mock = pa_spl.destroy();
         mock.done();
@@ -601,6 +526,80 @@ mod tests {
     }
 
     #[test]
+    fn confirm_get_latest_decibel() {
+        let expectations = vec![I2cTransaction::write_read(
+            DEVICE_ADDR,
+            vec![REG_DECIBEL],
+            vec![0x12],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let latest_decibel_val = pa_spl.get_latest_decibel().unwrap();
+        assert_eq!(0x12, latest_decibel_val);
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    #[test]
+    fn confirm_get_scratch() {
+        let expectations = vec![I2cTransaction::write_read(
+            DEVICE_ADDR,
+            vec![REG_SCRATCH],
+            vec![0x99],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let scratch_write_val: u8 = 0x99;
+        let scratch_read_val = pa_spl.get_scratch().unwrap();
+        assert_eq!(scratch_write_val, scratch_read_val);
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    #[test]
+    fn confirm_reset() {
+        let expectations = vec![I2cTransaction::write(
+            DEVICE_ADDR,
+            vec![REG_RESET, 0b0000_1000],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let result = pa_spl.reset();
+        assert!(result.is_ok());
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    #[test]
+    fn confirm_set_avg_time() {
+        let new_avg_time_ms: u16 = 125;
+        let tavg_high_expected_byte: u8 = 0x00;
+        let tavg_low_expected_byte: u8 = 0x7D;
+        let expectations = vec![I2cTransaction::write(
+            DEVICE_ADDR,
+            vec![
+                REG_TAVG_HIGH,
+                tavg_high_expected_byte,
+                tavg_low_expected_byte,
+            ],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let result = pa_spl.set_avg_time(new_avg_time_ms);
+        assert!(result.is_ok());
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    #[test]
     fn confirm_set_control_register() {
         let expectations = vec![
             I2cTransaction::write_read(
@@ -627,15 +626,16 @@ mod tests {
     }
 
     #[test]
-    fn confirm_reset() {
+    fn confirm_set_scratch() {
+        let scratch_write_val: u8 = 0x99;
         let expectations = vec![I2cTransaction::write(
             DEVICE_ADDR,
-            vec![REG_RESET, 0b0000_1000],
+            vec![REG_SCRATCH, scratch_write_val],
         )];
         let i2c_mock = I2cMock::new(&expectations);
         let mut pa_spl = PaSpl::new(i2c_mock);
 
-        let result = pa_spl.reset();
+        let result = pa_spl.set_scratch(scratch_write_val);
         assert!(result.is_ok());
 
         let mut mock = pa_spl.destroy();
