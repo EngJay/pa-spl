@@ -8,7 +8,12 @@ readme = "README.md"
 version = "0.1.0"
 
 [dependencies]
+bitfield-struct = "0.8.0"
+defmt = "0.3.8"
 embedded-hal = "0.2.7"
 
 [dev-dependencies]
 embedded-hal-mock = "0.11.1"
+
+[features]
+external_mic = []

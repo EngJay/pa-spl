@@ -6,7 +6,7 @@ use defmt_rtt as _; // defmt transport.
 use panic_probe as _; // Panic handler.
 use stm32f3xx_hal as _; // Memory layout.
 
-use pa_spl::{Error, PaSpl};
+use pa_spl::{ControlRegister, Error, FilterSetting, PaSpl};
 use stm32f3xx_hal::gpio::{
     gpiob::{PB6, PB7},
     Alternate, OpenDrain,
@@ -37,8 +37,9 @@ impl<E: Format> Format for WrappedError<E> {
 #[defmt_test::tests]
 mod tests {
     use super::State;
+    use crate::delay_ms;
     use defmt::{assert_eq, debug, error, unwrap};
-    use pa_spl::{Error, PaSpl};
+    use pa_spl::{ControlRegister, Error, FilterSetting, PaSpl, REG_CONTROL_DEFAULT};
     use stm32f3xx_hal::{gpio::gpiob, i2c::I2c, pac, prelude::*};
 
     #[init]
@@ -78,6 +79,14 @@ mod tests {
         State { pa_spl }
     }
 
+    #[after_each]
+    fn after_each(state: &mut State) {
+        let _ = state.pa_spl.reset();
+        // Short delay to allow for reset and settle.
+        let ms = 3;
+        delay_ms(ms);
+    }
+
     #[test]
     fn confirm_read_latest_decibel(state: &mut State) {
         // The value returned is a sensed value, so this only tests that a valid
@@ -102,6 +111,21 @@ mod tests {
     }
 
     #[test]
+    fn confirm_reset(state: &mut State) {
+        let result = state.pa_spl.reset();
+        assert!(result.is_ok());
+
+        // Short delay to allow for reset and settle.
+        let ms = 3;
+        delay_ms(ms);
+
+        // Confirm that the settings have been reset to the default.
+        const EXPECTED: ControlRegister = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
+        let reg_control = state.pa_spl.get_control_register().unwrap();
+        assert_eq!(EXPECTED, reg_control);
+    }
+
+    #[test]
     fn confirm_rw_scratch(state: &mut State) {
         const EXPECTED_VAL: u8 = 0x99;
         let write_result = state.pa_spl.set_scratch(EXPECTED_VAL);
@@ -112,7 +136,37 @@ mod tests {
     }
 
     #[test]
+    fn confirm_get_control_register(state: &mut State) {
+        const EXPECTED: ControlRegister = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
+        let reg_control = state.pa_spl.get_control_register().unwrap();
+        assert_eq!(EXPECTED, reg_control);
+    }
+
+    #[test]
+    fn confirm_set_control_register(state: &mut State) {
+        const EXPECTED_DEFAULT: ControlRegister = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
+        let mut reg_control = state.pa_spl.get_control_register().unwrap();
+        assert_eq!(EXPECTED_DEFAULT, reg_control);
+
+        reg_control.set_filter(FilterSetting::CWeighting);
+        let result = state.pa_spl.set_control_register(reg_control);
+        assert!(result.is_ok());
+
+        const EXPECTED_SET: ControlRegister = ControlRegister::from_bits(0b0000_0100);
+        let reg_control_set = state.pa_spl.get_control_register().unwrap();
+        assert_eq!(EXPECTED_SET, reg_control_set);
+    }
+
+    #[test]
     fn sanity_check() {
         assert!(true);
+    }
+}
+
+/// Busy-wait loop to create a delay.
+fn delay_ms(ms: u32) {
+    let cycles_per_ms = 8_000; // Assuming an 8 MHz clock (stm32f4-hal default for 303xc)
+    for _ in 0..(ms * cycles_per_ms) {
+        cortex_m::asm::nop(); // No operation (NOP) to prevent optimization
     }
 }
