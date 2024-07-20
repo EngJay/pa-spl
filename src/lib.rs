@@ -140,6 +140,8 @@ pub enum Error<E> {
     I2c(E),
     /// No I2C instance available.
     NoI2cInstance,
+    // Buffer overflow.
+    BufferOverflow,
 }
 
 impl<E, I2C> PaSpl<I2C>
@@ -331,6 +333,29 @@ where
         self.write_byte(REG_RESET, reg_reset.into_bits())
     }
 
+    /// Sets the average time in ms for calculating SPL.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// let new_avg_time_ms = 125;
+    /// let result = pa_spl.set_avg_time(new_avg_time_ms);
+    /// ```
+    pub fn set_avg_time(&mut self, ms: u16) -> Result<(), Error<E>> {
+        // Convert the average time in ms to high and low bytes.
+        let tavg_high_byte: u8 = (ms >> 8) as u8;
+        let tavg_low_byte: u8 = (ms & 0xFF) as u8;
+        let buffer = [tavg_high_byte, tavg_low_byte];
+
+        self.write_two_bytes(REG_TAVG_HIGH, &buffer)
+    }
+
     /// Sets the CONTROL register.
     ///
     /// # Errors
@@ -375,15 +400,6 @@ where
             .expect("I2C instance has already been taken")
     }
 
-    /// Writes a single byte to an I2C register of the device.
-    fn write_byte(&mut self, reg: u8, value: u8) -> Result<(), Error<E>> {
-        self.i2c
-            .as_mut()
-            .ok_or(Error::NoI2cInstance)?
-            .write(DEVICE_ADDR, &[reg, value])
-            .map_err(Error::I2c)
-    }
-
     /// Reads a single byte from an I2C register of the device.
     fn read_byte(&mut self, reg: u8) -> Result<u8, Error<E>> {
         let mut buffer = [0; 1];
@@ -403,6 +419,28 @@ where
             .write_read(DEVICE_ADDR, &[start_reg], buffer)
             .map_err(Error::I2c)?;
         Ok(())
+    }
+
+    /// Writes a single byte to an I2C register of the device.
+    fn write_byte(&mut self, reg: u8, value: u8) -> Result<(), Error<E>> {
+        self.i2c
+            .as_mut()
+            .ok_or(Error::NoI2cInstance)?
+            .write(DEVICE_ADDR, &[reg, value])
+            .map_err(Error::I2c)
+    }
+
+    /// Writes two bytes from a starting register.
+    fn write_two_bytes(&mut self, reg: u8, buffer: &[u8]) -> Result<(), Error<E>> {
+        if buffer.len() > 2 {
+            return Err(Error::BufferOverflow);
+        }
+
+        self.i2c
+            .as_mut()
+            .ok_or(Error::NoI2cInstance)?
+            .write(DEVICE_ADDR, &[reg, buffer[0], buffer[1]])
+            .map_err(Error::I2c)
     }
 }
 
