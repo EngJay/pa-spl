@@ -6,7 +6,7 @@
 *A Rust `no_std` [embedded-hal](https://github.com/rust-embedded/embedded-hal) driver for the
 [PCB Artists I2C Sound Level module](https://pcbartists.com/product/i2c-decibel-sound-level-meter-module/).*
 
-- [Example](examples/read-decibel-value/README.md) (STM32F3 Discovery)
+- [Example](https://github.com/EngJay/pa-spl/blob/main/examples/read-decibel-value/README.md) (STM32F3 Discovery)
 - API Documentation - TODO
 - [Vendor Documentation](docs/vendor/README.md)
 - [Release Notes](https://github.com/EngJay/pcb-artists-i2c-spl-module-driver-rust/releases)
@@ -47,7 +47,7 @@ fn main() -> ! {
 }
 ```
 
-See the [example project](examples/read-decibel-value/README.md) for
+See the [example project](https://github.com/EngJay/pa-spl/blob/main/examples/read-decibel-value/README.md) for
 a complete example for a STM32F3 Discovery.
 
 ## Features
@@ -68,8 +68,8 @@ TODO
 #### License
 
 <sup>
-Licensed under either of <a href="LICENSE-APACHE">Apache License, Version
-2.0</a> or <a href="LICENSE-MIT">MIT license</a> at your option.
+Licensed under either of <a href="https://github.com/EngJay/pa-spl/blob/main/LICENSE-APACHE">Apache License, Version
+2.0</a> or <a href="https://github.com/EngJay/pa-spl/blob/main/LICENSE-MIT">MIT license</a> at your option.
 </sup>
 <br>
 <sub>
