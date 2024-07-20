@@ -29,7 +29,10 @@ impl<E: Format> Format for WrappedError<E> {
             }
             pa_spl::Error::NoI2cInstance => {
                 defmt::write!(f, "No I2C Instance available");
-            } // Handle other error variants as needed
+            }
+            pa_spl::Error::BufferOverflow => {
+                defmt::write!(f, "Buffer has overflowed");
+            }
         }
     }
 }
@@ -88,14 +91,6 @@ mod tests {
     }
 
     #[test]
-    fn confirm_read_latest_decibel(state: &mut State) {
-        // The value returned is a sensed value, so this only tests that a valid
-        // result is returned.
-        let result = state.pa_spl.get_latest_decibel();
-        assert!(result.is_ok());
-    }
-
-    #[test]
     fn confirm_firmware_version(state: &mut State) {
         // NOTE: The published version is 0x32 but this device returns 0x33.
         const EXPECTED: u8 = 0x33;
@@ -108,6 +103,28 @@ mod tests {
         const EXPECTED: u32 = 1867099226; // TODO Device ID is not published - need to verify somehow, #5.
         let device_id = state.pa_spl.get_device_id().unwrap();
         assert_eq!(EXPECTED, device_id);
+    }
+
+    #[test]
+    fn confirm_get_avg_time(state: &mut State) {
+        const EXPECTED: u16 = 1000;
+        let avg_time = state.pa_spl.get_avg_time().unwrap();
+        assert_eq!(EXPECTED, avg_time);
+    }
+
+    #[test]
+    fn confirm_get_control_register(state: &mut State) {
+        const EXPECTED: ControlRegister = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
+        let reg_control = state.pa_spl.get_control_register().unwrap();
+        assert_eq!(EXPECTED, reg_control);
+    }
+
+    #[test]
+    fn confirm_read_latest_decibel(state: &mut State) {
+        // The value returned is a sensed value, so this only tests that a valid
+        // result is returned.
+        let result = state.pa_spl.get_latest_decibel();
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -136,10 +153,14 @@ mod tests {
     }
 
     #[test]
-    fn confirm_get_control_register(state: &mut State) {
-        const EXPECTED: ControlRegister = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
-        let reg_control = state.pa_spl.get_control_register().unwrap();
-        assert_eq!(EXPECTED, reg_control);
+    fn confirm_set_avg_time(state: &mut State) {
+        let new_avg_time_ms: u16 = 125;
+        let result = state.pa_spl.set_avg_time(new_avg_time_ms);
+        assert!(result.is_ok());
+
+        const EXPECTED: u16 = 125;
+        let avg_time = state.pa_spl.get_avg_time().unwrap();
+        assert_eq!(EXPECTED, avg_time);
     }
 
     #[test]
