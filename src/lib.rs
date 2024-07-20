@@ -266,6 +266,8 @@ where
 
     /// Soft resets the sensor.
     ///
+    /// The sensor is soft reset by setting the System Reset bit in the RESET register.
+    ///
     /// # Errors
     ///
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
