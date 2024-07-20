@@ -1,4 +1,5 @@
 #![doc = include_str!("../README.md")]
+#![cfg_attr(not(test), no_std)]
 
 use bitfield_struct::bitfield;
 use defmt::Format;
