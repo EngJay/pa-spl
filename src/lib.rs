@@ -1,4 +1,4 @@
-#![cfg_attr(not(test), no_std)]
+#![doc = include_str!("../README.md")]
 
 use bitfield_struct::bitfield;
 use defmt::Format;
@@ -184,7 +184,7 @@ where
         Self { i2c: Some(i2c) }
     }
 
-    /// Gets the 16-bit averaging time in ms from registers TAVG high and TAVG (0x07 and 0x08).
+    /// Gets the 16-bit averaging time in ms from registers TAVG high and TAVG low (0x07 and 0x08).
     ///
     /// # Errors
     ///

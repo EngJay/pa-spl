@@ -30,17 +30,21 @@ pa-spl = 0.1
 #![no_std]
 #![no_main]
 
+... board-specific includes ...
 use pa_spl::{Error, PaSpl};
 
-// ... configuration + initialization for your board ...
+#[entry]
+fn main() -> ! {
+  // ... configuration + initialization for your board + I2C ...
 
-// Create an instance of PaSpl.
-//
-let mut pa_spl = PaSpl::new(i2c);
+  // Create an instance of PaSpl.
+  //
+  let mut pa_spl = PaSpl::new(i2c);
 
-// Get SPL value from the sensor.
-//
-let spl = pa_spl.get_latest_decibel().unwrap();
+  // Get SPL value from the sensor.
+  //
+  let spl = pa_spl.get_latest_decibel().unwrap();
+}
 ```
 
 See the [example project](examples/read-decibel-value/README.md) for
