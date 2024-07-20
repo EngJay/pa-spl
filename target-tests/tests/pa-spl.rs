@@ -29,7 +29,10 @@ impl<E: Format> Format for WrappedError<E> {
             }
             pa_spl::Error::NoI2cInstance => {
                 defmt::write!(f, "No I2C Instance available");
-            } // Handle other error variants as needed
+            }
+            pa_spl::Error::BufferOverflow => {
+                defmt::write!(f, "Buffer has overflowed");
+            }
         }
     }
 }
@@ -133,6 +136,17 @@ mod tests {
 
         let val = state.pa_spl.get_scratch().unwrap();
         assert_eq!(EXPECTED_VAL, val);
+    }
+
+    #[test]
+    fn confirm_set_avg_time(state: &mut State) {
+        let new_avg_time_ms: u16 = 125;
+        let result = state.pa_spl.set_avg_time(new_avg_time_ms);
+        assert!(result.is_ok());
+
+        const EXPECTED: u16 = 125;
+        let avg_time = state.pa_spl.get_avg_time().unwrap();
+        assert_eq!(EXPECTED, avg_time);
     }
 
     #[test]
