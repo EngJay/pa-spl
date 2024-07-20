@@ -30,7 +30,7 @@ pa-spl = 0.1
 #![no_std]
 #![no_main]
 
-... board-specific includes ...
+// ... board-specific includes ...
 use pa_spl::{Error, PaSpl};
 
 #[entry]
