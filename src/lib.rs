@@ -116,12 +116,6 @@ const REGS_DEVICE_ID: [u8; 4] = [0x01, 0x02, 0x03, 0x04];
 const REG_SCRATCH: u8 = 0x05;
 /// TAVG register high byte address.
 const REG_TAVG_HIGH: u8 = 0x07;
-/// TAVG register high byte default value.
-const REG_TAVG_HIGH_DEFAULT_BYTE: u8 = 0x03;
-/// TAVG register low byte address.
-const REG_TAVG_LOW: u8 = 0x08;
-/// TAVG register low byte default value.
-const REG_TAVG_LOW_DEFAULT_BYTE: u8 = 0xE8;
 /// Default value for averaging time in ms.
 pub const REG_AVERAGING_TIME_DEFAULT_MS: u16 = 1000;
 
@@ -448,8 +442,7 @@ where
 mod tests {
     use crate::{
         ControlRegister, FilterSetting, REG_AVERAGING_TIME_DEFAULT_MS, REG_CONTROL,
-        REG_CONTROL_DEFAULT, REG_RESET, REG_TAVG_HIGH, REG_TAVG_HIGH_DEFAULT_BYTE,
-        REG_TAVG_LOW_DEFAULT_BYTE,
+        REG_CONTROL_DEFAULT, REG_RESET, REG_TAVG_HIGH,
     };
 
     use super::{PaSpl, DEVICE_ADDR, REGS_DEVICE_ID, REG_DECIBEL, REG_SCRATCH, REG_VERSION};
@@ -457,6 +450,10 @@ mod tests {
 
     /// DEVICE_VER_MEMS_LTS: Published version for base features + audio spectrum analyzer.
     const DEVICE_VER_MEMS_LTS_ASA: u8 = 0x32;
+    /// TAVG register high byte default value.
+    const REG_TAVG_HIGH_DEFAULT_BYTE: u8 = 0x03;
+    /// TAVG register low byte default value.
+    const REG_TAVG_LOW_DEFAULT_BYTE: u8 = 0xE8;
 
     #[test]
     fn confirm_get_latest_decibel() {
