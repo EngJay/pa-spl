@@ -271,7 +271,7 @@ where
         self.read_byte(REG_VERSION)
     }
 
-    /// Gets the latest SPL value in decibels from the DECIBELregister.
+    /// Gets the latest SPL value in decibels from the DECIBEL register.
     ///
     /// The SPL value is averaged over the last Tavg time period that is stored
     /// in the TAVG high byte register (0x07) and the TAVG low register (x08).
@@ -290,6 +290,44 @@ where
     pub fn get_latest_decibel(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_DECIBEL)
     }
+
+    /// Gets the max SPL value in decibels from the MAX register.
+    ///
+    /// Maximum value of decibel reading captured since power-up or manual reset of MIN/MAX registers.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// let max_decibel_val = pa_spl.get_max_decibel().unwrap();
+    /// ```
+    // pub fn get_max_decibel(&mut self) -> Result<u8, Error<E>> {
+    //     self.read_byte(REG_MAX)
+    // }
+
+    /// Gets the mion SPL value in decibels from the MIN register.
+    ///
+    /// Maximum value of decibel reading captured since power-up or manual reset of MIN/MAX registers.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// let min_decibel_val = pa_spl.get_min_decibel().unwrap();
+    /// ```
+    // pub fn get_min_decibel(&mut self) -> Result<u8, Error<E>> {
+    //     self.read_byte(REG_MIN)
+    // }
 
     /// Gets the value stored in the SCRATCH register.
     ///
@@ -541,6 +579,40 @@ mod tests {
         let mut mock = pa_spl.destroy();
         mock.done();
     }
+
+    #[test]
+    fn confirm_get_max_decibel() {
+        let expectations = vec![I2cTransaction::write_read(
+            DEVICE_ADDR,
+            vec![REG_MAX],
+            vec![0x12],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let result = pa_spl.get_max_decibel();
+        assert!(result.is_ok());
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    // #[test]
+    // fn confirm_get_min_decibel() {
+    //     let expectations = vec![I2cTransaction::write_read(
+    //         DEVICE_ADDR,
+    //         vec![REG_MIN],
+    //         vec![0x12],
+    //     )];
+    //     let i2c_mock = I2cMock::new(&expectations);
+    //     let mut pa_spl = PaSpl::new(i2c_mock);
+
+    //     let result = pa_spl.get_min_decibel();
+    //     assert!(result.is_ok());
+
+    //     let mut mock = pa_spl.destroy();
+    //     mock.done();
+    // }
 
     #[test]
     fn confirm_get_scratch() {
