@@ -26,7 +26,7 @@ pa-spl = 0.1
 
 </details>
 
-```rust
+```rust,ignore
 #![no_std]
 #![no_main]
 
