@@ -114,7 +114,9 @@ const REG_DECIBEL: u8 = 0x0A;
 /// Device ID registers, ID3, ID2, ID1, ID0
 const REGS_DEVICE_ID: [u8; 4] = [0x01, 0x02, 0x03, 0x04];
 /// MAX register.
-const REG_MAX: u8 = 0x0c;
+const REG_MAX: u8 = 0x0C;
+/// MIN register.
+const REG_MIN: u8 = 0xD;
 /// SCRATCH register address.
 const REG_SCRATCH: u8 = 0x05;
 /// TAVG register high byte address.
@@ -312,24 +314,24 @@ where
         self.read_byte(REG_MAX)
     }
 
-    /// Gets the mion SPL value in decibels from the MIN register.
-    ///
-    /// Maximum value of decibel reading captured since power-up or manual reset of MIN/MAX registers.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
-    ///
-    /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```ignore
-    /// let min_decibel_val = pa_spl.get_min_decibel().unwrap();
-    /// ```
-    // pub fn get_min_decibel(&mut self) -> Result<u8, Error<E>> {
-    //     self.read_byte(REG_MIN)
-    // }
+    // / Gets the min SPL value in decibels from the MIN register.
+    // /
+    // / Minimum value of decibel reading captured since power-up or manual reset of MIN/MAX registers.
+    // /
+    // / # Errors
+    // /
+    // / Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    // /
+    // / Returns [`Error::I2c`] if I2C returns an error.
+    // /
+    // / # Examples
+    // /
+    // / ```ignore
+    // / let min_decibel_val = pa_spl.get_min_decibel().unwrap();
+    // / ```
+    pub fn get_min_decibel(&mut self) -> Result<u8, Error<E>> {
+        self.read_byte(REG_MIN)
+    }
 
     /// Gets the value stored in the SCRATCH register.
     ///
@@ -487,7 +489,7 @@ mod tests {
     };
 
     use super::{
-        PaSpl, DEVICE_ADDR, REGS_DEVICE_ID, REG_DECIBEL, REG_MAX, REG_SCRATCH, REG_VERSION,
+        PaSpl, DEVICE_ADDR, REGS_DEVICE_ID, REG_DECIBEL, REG_MAX, REG_MIN, REG_SCRATCH, REG_VERSION,
     };
     use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
 
