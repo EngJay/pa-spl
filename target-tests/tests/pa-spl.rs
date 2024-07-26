@@ -120,6 +120,22 @@ mod tests {
     }
 
     #[test]
+    fn confirm_get_max_decibel(state: &mut State) {
+        // The value returned is a sensed value, so this only tests that a valid
+        // result is returned.
+        let result = state.pa_spl.get_max_decibel();
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn confirm_get_min_decibel(state: &mut State) {
+        // The value returned is a sensed value, so this only tests that a valid
+        // result is returned.
+        let result = state.pa_spl.get_min_decibel();
+        assert!(result.is_ok());
+    }
+
+    #[test]
     fn confirm_read_latest_decibel(state: &mut State) {
         // The value returned is a sensed value, so this only tests that a valid
         // result is returned.

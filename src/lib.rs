@@ -113,6 +113,10 @@ const REG_VERSION: u8 = 0x00;
 const REG_DECIBEL: u8 = 0x0A;
 /// Device ID registers, ID3, ID2, ID1, ID0
 const REGS_DEVICE_ID: [u8; 4] = [0x01, 0x02, 0x03, 0x04];
+/// MAX register.
+const REG_MAX: u8 = 0x0C;
+/// MIN register.
+const REG_MIN: u8 = 0xD;
 /// SCRATCH register address.
 const REG_SCRATCH: u8 = 0x05;
 /// TAVG register high byte address.
@@ -271,7 +275,7 @@ where
         self.read_byte(REG_VERSION)
     }
 
-    /// Gets the latest SPL value in decibels from the DECIBELregister.
+    /// Gets the latest SPL value in decibels from the DECIBEL register.
     ///
     /// The SPL value is averaged over the last Tavg time period that is stored
     /// in the TAVG high byte register (0x07) and the TAVG low register (x08).
@@ -289,6 +293,44 @@ where
     /// ```
     pub fn get_latest_decibel(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_DECIBEL)
+    }
+
+    /// Gets the max SPL value in decibels from the MAX register.
+    ///
+    /// Maximum value of decibel reading captured since power-up or manual reset of MIN/MAX registers.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// let max_decibel_val = pa_spl.get_max_decibel().unwrap();
+    /// ```
+    pub fn get_max_decibel(&mut self) -> Result<u8, Error<E>> {
+        self.read_byte(REG_MAX)
+    }
+
+    /// Gets the min SPL value in decibels from the MIN register.
+    ///
+    /// Minimum value of decibel reading captured since power-up or manual reset of MIN/MAX registers.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// let min_decibel_val = pa_spl.get_min_decibel().unwrap();
+    /// ```
+    pub fn get_min_decibel(&mut self) -> Result<u8, Error<E>> {
+        self.read_byte(REG_MIN)
     }
 
     /// Gets the value stored in the SCRATCH register.
@@ -446,7 +488,9 @@ mod tests {
         REG_CONTROL_DEFAULT, REG_RESET, REG_TAVG_HIGH,
     };
 
-    use super::{PaSpl, DEVICE_ADDR, REGS_DEVICE_ID, REG_DECIBEL, REG_SCRATCH, REG_VERSION};
+    use super::{
+        PaSpl, DEVICE_ADDR, REGS_DEVICE_ID, REG_DECIBEL, REG_MAX, REG_MIN, REG_SCRATCH, REG_VERSION,
+    };
     use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
 
     /// DEVICE_VER_MEMS_LTS: Published version for base features + audio spectrum analyzer.
@@ -537,6 +581,40 @@ mod tests {
 
         let latest_decibel_val = pa_spl.get_latest_decibel().unwrap();
         assert_eq!(0x12, latest_decibel_val);
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    #[test]
+    fn confirm_get_max_decibel() {
+        let expectations = vec![I2cTransaction::write_read(
+            DEVICE_ADDR,
+            vec![REG_MAX],
+            vec![0x12],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let result = pa_spl.get_max_decibel();
+        assert!(result.is_ok());
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    #[test]
+    fn confirm_get_min_decibel() {
+        let expectations = vec![I2cTransaction::write_read(
+            DEVICE_ADDR,
+            vec![REG_MIN],
+            vec![0x12],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let result = pa_spl.get_min_decibel();
+        assert!(result.is_ok());
 
         let mut mock = pa_spl.destroy();
         mock.done();
