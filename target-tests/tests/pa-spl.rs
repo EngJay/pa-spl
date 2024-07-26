@@ -100,9 +100,10 @@ mod tests {
 
     #[test]
     fn confirm_device_id(state: &mut State) {
-        const EXPECTED: u32 = 1867099226; // TODO Device ID is not published - need to verify somehow, #5.
-        let device_id = state.pa_spl.get_device_id().unwrap();
-        assert_eq!(EXPECTED, device_id);
+        // The device ID is not published and will differ from device to device,
+        // so this only checks the a valid response is received.
+        let result = state.pa_spl.get_device_id();
+        assert!(result.is_ok());
     }
 
     #[test]
