@@ -492,9 +492,7 @@ mod tests {
         REG_CONTROL_DEFAULT, REG_RESET, REG_TAVG_HIGH,
     };
 
-    use super::{
-        PaSpl, DEVICE_ADDR, REGS_DEVICE_ID, REG_DECIBEL, REG_MAX, REG_MIN, REG_SCRATCH, REG_VERSION,
-    };
+    use super::*;
     use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
 
     /// DEVICE_VER_MEMS_LTS: Published version for base features + audio spectrum analyzer.
@@ -573,6 +571,7 @@ mod tests {
         mock.done();
     }
 
+    #[cfg(feature = "external_mic")]
     #[test]
     fn confirm_get_gain() {
         let expectations = vec![I2cTransaction::write_read(
