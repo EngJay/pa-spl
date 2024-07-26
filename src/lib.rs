@@ -279,6 +279,31 @@ where
         self.read_byte(REG_VERSION)
     }
 
+    /// Gets the gain value in 0.5 decibel steps from the GAIN register.
+    ///
+    /// This value only needs to be modified if you are using your own
+    /// microphone. The default value will work with the default microphone
+    /// supplied with the module.
+    ///
+    /// Acceptable values are 0 to 95 to set the gain in 0.5 dB steps (+0.0 dB
+    /// to +47.5 dB).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// let gain_val = pa_spl.get_gain().unwrap();
+    /// ```
+    #[cfg(feature = "external_mic")]
+    pub fn get_gain(&mut self) -> Result<u8, Error<E>> {
+        self.read_byte(REG_GAIN)
+    }
+
     /// Gets the latest SPL value in decibels from the DECIBEL register.
     ///
     /// The SPL value is averaged over the last Tavg time period that is stored
