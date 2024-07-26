@@ -601,22 +601,22 @@ mod tests {
         mock.done();
     }
 
-    // #[test]
-    // fn confirm_get_min_decibel() {
-    //     let expectations = vec![I2cTransaction::write_read(
-    //         DEVICE_ADDR,
-    //         vec![REG_MIN],
-    //         vec![0x12],
-    //     )];
-    //     let i2c_mock = I2cMock::new(&expectations);
-    //     let mut pa_spl = PaSpl::new(i2c_mock);
+    #[test]
+    fn confirm_get_min_decibel() {
+        let expectations = vec![I2cTransaction::write_read(
+            DEVICE_ADDR,
+            vec![REG_MIN],
+            vec![0x12],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
 
-    //     let result = pa_spl.get_min_decibel();
-    //     assert!(result.is_ok());
+        let result = pa_spl.get_min_decibel();
+        assert!(result.is_ok());
 
-    //     let mut mock = pa_spl.destroy();
-    //     mock.done();
-    // }
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
 
     #[test]
     fn confirm_get_scratch() {
