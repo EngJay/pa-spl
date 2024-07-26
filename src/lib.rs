@@ -110,19 +110,23 @@ pub struct ResetRegister {
 /// VESION register address.
 const REG_VERSION: u8 = 0x00;
 /// DECIBEL register address.
-const REG_DECIBEL: u8 = 0x0A;
+const REG_DECIBEL: u8 = 0x0a;
 /// Device ID registers, ID3, ID2, ID1, ID0
 const REGS_DEVICE_ID: [u8; 4] = [0x01, 0x02, 0x03, 0x04];
 /// MAX register.
-const REG_MAX: u8 = 0x0C;
+const REG_MAX: u8 = 0x0c;
 /// MIN register.
-const REG_MIN: u8 = 0xD;
+const REG_MIN: u8 = 0x0d;
 /// SCRATCH register address.
 const REG_SCRATCH: u8 = 0x05;
 /// TAVG register high byte address.
 const REG_TAVG_HIGH: u8 = 0x07;
 /// Default value for averaging time in ms.
 pub const REG_AVERAGING_TIME_DEFAULT_MS: u16 = 1000;
+
+/// GAIN register.
+#[cfg(feature = "external_mic")]
+const REG_GAIN: u8 = 0x0f;
 
 /// A PA SPL Module on the I2C bus `I2C`.
 pub struct PaSpl<I2C>
@@ -564,6 +568,24 @@ mod tests {
         let reg_control = pa_spl.get_control_register().unwrap();
         let control_register_default_bits = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
         assert_eq!(control_register_default_bits, reg_control);
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    #[test]
+    fn confirm_get_gain() {
+        let expectations = vec![I2cTransaction::write_read(
+            DEVICE_ADDR,
+            vec![REG_GAIN],
+            vec![18],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let expected_gain: u8 = 18;
+        let gain_val = pa_spl.get_gain().unwrap();
+        assert_eq!(expected_gain, gain_val);
 
         let mut mock = pa_spl.destroy();
         mock.done();
