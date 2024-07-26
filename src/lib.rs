@@ -314,21 +314,21 @@ where
         self.read_byte(REG_MAX)
     }
 
-    // / Gets the min SPL value in decibels from the MIN register.
-    // /
-    // / Minimum value of decibel reading captured since power-up or manual reset of MIN/MAX registers.
-    // /
-    // / # Errors
-    // /
-    // / Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
-    // /
-    // / Returns [`Error::I2c`] if I2C returns an error.
-    // /
-    // / # Examples
-    // /
-    // / ```ignore
-    // / let min_decibel_val = pa_spl.get_min_decibel().unwrap();
-    // / ```
+    /// Gets the min SPL value in decibels from the MIN register.
+    ///
+    /// Minimum value of decibel reading captured since power-up or manual reset of MIN/MAX registers.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// let min_decibel_val = pa_spl.get_min_decibel().unwrap();
+    /// ```
     pub fn get_min_decibel(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_MIN)
     }
