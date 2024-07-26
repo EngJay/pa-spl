@@ -113,6 +113,8 @@ const REG_VERSION: u8 = 0x00;
 const REG_DECIBEL: u8 = 0x0A;
 /// Device ID registers, ID3, ID2, ID1, ID0
 const REGS_DEVICE_ID: [u8; 4] = [0x01, 0x02, 0x03, 0x04];
+/// MAX register.
+const REG_MAX: u8 = 0x0c;
 /// SCRATCH register address.
 const REG_SCRATCH: u8 = 0x05;
 /// TAVG register high byte address.
@@ -306,9 +308,9 @@ where
     /// ```ignore
     /// let max_decibel_val = pa_spl.get_max_decibel().unwrap();
     /// ```
-    // pub fn get_max_decibel(&mut self) -> Result<u8, Error<E>> {
-    //     self.read_byte(REG_MAX)
-    // }
+    pub fn get_max_decibel(&mut self) -> Result<u8, Error<E>> {
+        self.read_byte(REG_MAX)
+    }
 
     /// Gets the mion SPL value in decibels from the MIN register.
     ///
@@ -484,7 +486,9 @@ mod tests {
         REG_CONTROL_DEFAULT, REG_RESET, REG_TAVG_HIGH,
     };
 
-    use super::{PaSpl, DEVICE_ADDR, REGS_DEVICE_ID, REG_DECIBEL, REG_SCRATCH, REG_VERSION};
+    use super::{
+        PaSpl, DEVICE_ADDR, REGS_DEVICE_ID, REG_DECIBEL, REG_MAX, REG_SCRATCH, REG_VERSION,
+    };
     use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
 
     /// DEVICE_VER_MEMS_LTS: Published version for base features + audio spectrum analyzer.
