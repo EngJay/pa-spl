@@ -749,6 +749,24 @@ mod tests {
         mock.done();
     }
 
+    #[cfg(feature = "external_mic")]
+    #[test]
+    fn confirm_set_gain() {
+        let expected_gain_val: u8 = 43;
+        let expectations = vec![I2cTransaction::write(
+            DEVICE_ADDR,
+            vec![REG_GAIN, expected_gain_val],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let gain_val = pa_spl.set_gain(expected_gain_val).unwrap();
+        assert_eq!(expected_gain_val, gain_val);
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
     #[test]
     fn confirm_set_scratch() {
         let scratch_write_val: u8 = 0x99;
