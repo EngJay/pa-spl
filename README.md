@@ -58,21 +58,28 @@ for a complete example for a STM32F3 Discovery.
 - Set thresholds for triggering of interrupt pin that can be used as an external
   trigger.
 
-## Rust Version Support
+## Minimum Supported Rust Version (MSRV)
 
-The minimum supported Rust version (MSRV) is
-[1.79](https://releases.rs/docs/1.79.0/).
+This crate is guaranteed to compile on stable Rust
+[1.60](https://releases.rs/docs/1.60.0/) and up. It might compile with older
+versions but that may change in any new patch release.
 
-### Minimum Rust version can be increased in minor version updates
+See [here](https://github.com/EngJay/pa-spl/tree/main/docs/msrv.md) for details
+on how the MSRV may be upgraded.
 
-The policy is that the minimum Rust version required to use this crate can be
-increased in minor version updates. For example, if pa-spl 0.1 requires Rust
-1.79.0, then pa-spl 0.1.z for all values of z will also require Rust 1.79.0 or
-newer. However, regex 0.2 for y > 0 may require a newer minimum version of Rust.
+## Minimum Supported Embedded HAL Version
 
-## Embedded HAL Version Support
+TL;DR: This initial release only supports embedded-hal 0.2 and support for the
+1.0 version will be added in subsequent release.
 
-TODO
+This crate depends on the [embedded-hal](https://crates.io/crates/embedded-hal)
+crate as it is a driver for use with embedded-hal. Embedded versioning typically
+moves significantly slower than mainstream, so numerous crates in the repository
+still depend on the [0.2](https://crates.io/crates/embedded-hal/0.2.7) version
+of embedded-hal rather than the recent 1.0 release. Due to this, the minimum
+supported embedded-hal version of this crate is 0.2 and the 1.0 version is not
+yet supported in this initial release. Support for the 1.0 version of
+embedded-hal will be added in a subsequent release.
 
 #### License
 
