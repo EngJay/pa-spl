@@ -441,6 +441,25 @@ where
         self.write_byte(REG_CONTROL, reg.into_bits())
     }
 
+    /// Sets the gain in the GAIN register.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// let gain = 42;
+    /// let result = pa_spl.set_gain(gain);
+    /// ```
+    #[cfg(feature = "external_mic")]
+    pub fn set_gain(&mut self, value: u8) -> Result<(), Error<E>> {
+        self.write_byte(REG_GAIN, value)
+    }
+
     /// Sets the value stored in the SCRATCH register.
     ///
     /// # Errors
@@ -752,16 +771,16 @@ mod tests {
     #[cfg(feature = "external_mic")]
     #[test]
     fn confirm_set_gain() {
-        let expected_gain_val: u8 = 43;
+        let new_gain_val: u8 = 43;
         let expectations = vec![I2cTransaction::write(
             DEVICE_ADDR,
-            vec![REG_GAIN, expected_gain_val],
+            vec![REG_GAIN, new_gain_val],
         )];
         let i2c_mock = I2cMock::new(&expectations);
         let mut pa_spl = PaSpl::new(i2c_mock);
 
-        let gain_val = pa_spl.set_gain(expected_gain_val).unwrap();
-        assert_eq!(expected_gain_val, gain_val);
+        let result = pa_spl.set_gain(new_gain_val);
+        assert!(result.is_ok());
 
         let mut mock = pa_spl.destroy();
         mock.done();
