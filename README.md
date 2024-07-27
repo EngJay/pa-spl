@@ -47,8 +47,9 @@ fn main() -> ! {
 }
 ```
 
-See the [example project](https://github.com/EngJay/pa-spl/blob/main/examples/read-decibel-value/README.md) for
-a complete example for a STM32F3 Discovery.
+See the
+[example project](https://github.com/EngJay/pa-spl/blob/main/examples/read-decibel-value/README.md)
+for a complete example for a STM32F3 Discovery.
 
 ## Features
 
@@ -59,7 +60,15 @@ a complete example for a STM32F3 Discovery.
 
 ## Rust Version Support
 
-TODO
+The minimum supported Rust version (MSRV) is
+[1.79](https://releases.rs/docs/1.79.0/).
+
+### Minimum Rust version can be increased in minor version updates
+
+The policy is that the minimum Rust version required to use this crate can be
+increased in minor version updates. For example, if pa-spl 0.1 requires Rust
+1.79.0, then pa-spl 0.1.z for all values of z will also require Rust 1.79.0 or
+newer. However, regex 0.2 for y > 0 may require a newer minimum version of Rust.
 
 ## Embedded HAL Version Support
 
