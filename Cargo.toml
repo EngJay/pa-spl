@@ -1,10 +1,23 @@
 [package]
-authors = ["Jason Scott"]
-description = "A no_std driver for the PCB Artists SPL module"
+authors = ["Jason Scott <>"]
+categories = ["embedded", "no-std"]
+description = "A no-std embedded-hal I2C driver for the PCB Artists SPL module"
+# documentation = "" # TODO
 edition = "2021"
-keywords = []
+homepage = ""
+keywords = [
+    "audio",
+    "embedded",
+    "embedded-hal-driver",
+    "no-std",
+    "sound",
+    "spl",
+]
+license = "MIT OR Apache-2.0"
 name = "pa-spl"
 readme = "README.md"
+repository = "https://github.com/EngJay/pa-spl"
+rust-version = "1.60"
 version = "0.1.0"
 
 [dependencies]
@@ -17,3 +30,13 @@ embedded-hal-mock = "0.11.1"
 
 [features]
 external_mic = []
+
+[profile.dev]
+opt-level = "s"
+codegen-units = 1
+incremental = false
+
+[profile.release]
+codegen-units = 1
+debug = true
+lto = true
