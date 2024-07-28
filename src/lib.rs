@@ -160,36 +160,13 @@ where
     ///
     /// # Examples
     ///
-    /// ```ignore
-    /// // Configure clocks.
-    /// let device_periphs = unwrap!(pac::Peripherals::take());
-    /// let mut rcc = device_periphs.RCC.constrain();
-    /// let mut flash = device_periphs.FLASH.constrain();
-    /// let clocks = rcc.cfgr.freeze(&mut flash.acr);
+    /// ```no_run
+    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+    /// use pa_spl::PaSpl;
     ///
-    /// // Get the GRIO port for the pins needed.
-    /// let mut gpiob = device_periphs.GPIOB.split(&mut rcc.ahb);
-    ///
-    /// // Configure pins and create an instance of I2C1.
-    /// let mut scl =
-    ///     gpiob
-    ///         .pb6
-    ///         .into_af_open_drain(&mut gpiob.moder, &mut gpiob.otyper, &mut gpiob.afrl);
-    /// let mut sda =
-    ///     gpiob
-    ///         .pb7
-    ///         .into_af_open_drain(&mut gpiob.moder, &mut gpiob.otyper, &mut gpiob.afrl);
-    /// scl.internal_pull_up(&mut gpiob.pupdr, true);
-    /// sda.internal_pull_up(&mut gpiob.pupdr, true);
-    /// let i2c = I2c::new(
-    ///     device_periphs.I2C1,
-    ///     (scl, sda),
-    ///     100.kHz().try_into().unwrap(),
-    ///     clocks,
-    ///     &mut rcc.apb1,
-    /// );
-    ///
-    /// let pa_spl = PaSpl::new(i2c);
+    /// let expectations = vec![];
+    /// let i2c_mock = I2cMock::new(&expectations);
+    /// let pa_spl = PaSpl::new(i2c_mock);
     /// ```
     pub fn new(i2c: I2C) -> Self {
         Self {
