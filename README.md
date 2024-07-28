@@ -272,8 +272,10 @@ To run the off-target tests:
 cargo test
 ```
 
-The HIL testing project is in the `target-tests` directory and is configured to
-use [probe-rs](https://probe.rs/) to automatically build the tests, flash the
+The
+[HIL testing project](https://github.com/EngJay/pa-spl/tree/main/target-tests/README.md)
+is in the `target-tests` directory and is configured to use
+[probe-rs](https://probe.rs/) to automatically build the tests, flash the
 target, run the tests, and report results.
 
 To run the HIL tests, connect the hardware according to the STM32F3 Discovery
