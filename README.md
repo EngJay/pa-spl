@@ -20,7 +20,8 @@
 
 ## Usage
 
-This example uses the SPL module with a STM32F3 Discovery development board and a USB-TTL converter.
+This example uses the SPL module with a STM32F3 Discovery development board and
+a USB-TTL converter.
 
 See the
 [example project](https://github.com/EngJay/pa-spl/blob/main/examples/read-decibel-value/README.md)
@@ -256,6 +257,39 @@ fn main() -> ! {
 
 ```
 
+## Tests
+
+Two test suites are included - an off-target unit test suite included in the
+source of the driver that uses
+[embedded-hal-mock](https://github.com/dbrgn/embedded-hal-mock) and a
+hardware-in-the-loop (HIL) test suite that is included as a nested cargo project
+following the [pattern](https://ferrous-systems.com/blog/test-driver-crate/)
+described by Ferrous Systems for testing a driver crate.
+
+To run the off-target tests:
+
+```cli
+cargo test
+```
+
+The HIL testing project is in the `target-tests` directory and is configured to
+use [probe-rs](https://probe.rs/) to automatically build the tests, flash the
+target, run the tests, and report results.
+
+To run the HIL tests, connect the hardware according to the STM32F3 Discovery
+example provided in the repo (minus the TTL-USB convertor) with a spectrum
+analysis version of the PCB Artists sensor, 0x32 or 0x33, then:
+
+```cli
+cd target-tests
+cargo test
+```
+
+The CI configuration runs the tests for every commit and PR against Rust 1.65,
+stable, beta, and nightly. The HIL tests are run privately due to the security
+issues with attaching a local GitHub Actions runner to a public respository but
+anyone is welcome to run them locally on their own hardware.
+
 ## Minimum Supported Rust Version (MSRV)
 
 This crate is guaranteed to compile on stable Rust
@@ -295,5 +329,7 @@ dual licensed as above, without any additional terms or conditions.
 #### Contribution
 
 <sup>
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
+dual licensed as above, without any additional terms or conditions.
 </sup>
