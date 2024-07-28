@@ -182,7 +182,14 @@ where
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```no_run
+    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+    /// use pa_spl::PaSpl;
+    ///
+    /// let expectations = vec![];
+    /// let mut i2c_mock = I2cMock::new(&expectations);
+    /// let mut pa_spl = PaSpl::new(i2c_mock);
+    ///
     /// let custom_device_addr: u8 = 0x99;
     /// pa_spl.set_device_addr(custom_device_addr);
     /// ```
@@ -201,7 +208,14 @@ where
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```no_run
+    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+    /// use pa_spl::PaSpl;
+    ///
+    /// let expectations = vec![];
+    /// let mut i2c_mock = I2cMock::new(&expectations);
+    /// let mut pa_spl = PaSpl::new(i2c_mock);
+    ///
     /// let avg_time_ms = pa_spl.get_avg_time().unwrap();
     /// ```
     ///
@@ -225,7 +239,14 @@ where
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```no_run
+    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+    /// use pa_spl::PaSpl;
+    ///
+    /// let expectations = vec![];
+    /// let mut i2c_mock = I2cMock::new(&expectations);
+    /// let mut pa_spl = PaSpl::new(i2c_mock);
+    ///
     /// let reg_control = pa_spl.get_control_register().unwrap();
     /// ```
     pub fn get_control_register(&mut self) -> Result<ControlRegister, Error<E>> {
@@ -243,7 +264,14 @@ where
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```no_run
+    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+    /// use pa_spl::PaSpl;
+    ///
+    /// let expectations = vec![];
+    /// let mut i2c_mock = I2cMock::new(&expectations);
+    /// let mut pa_spl = PaSpl::new(i2c_mock);
+    ///
     /// let device_id = pa_spl.get_device_id().unwrap();
     /// ```
     ///
@@ -270,7 +298,14 @@ where
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```no_run
+    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+    /// use pa_spl::PaSpl;
+    ///
+    /// let expectations = vec![];
+    /// let mut i2c_mock = I2cMock::new(&expectations);
+    /// let mut pa_spl = PaSpl::new(i2c_mock);
+    ///
     /// let firmware_version = pa_spl.get_firmware_version().unwrap();
     /// ```
     pub fn get_firmware_version(&mut self) -> Result<u8, Error<E>> {
@@ -294,7 +329,14 @@ where
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```no_run
+    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+    /// use pa_spl::PaSpl;
+    ///
+    /// let expectations = vec![];
+    /// let mut i2c_mock = I2cMock::new(&expectations);
+    /// let mut pa_spl = PaSpl::new(i2c_mock);
+    ///
     /// let gain_val = pa_spl.get_gain().unwrap();
     /// ```
     #[cfg(feature = "external_mic")]
@@ -315,7 +357,14 @@ where
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```no_run
+    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+    /// use pa_spl::PaSpl;
+    ///
+    /// let expectations = vec![];
+    /// let mut i2c_mock = I2cMock::new(&expectations);
+    /// let mut pa_spl = PaSpl::new(i2c_mock);
+    ///
     /// let latest_decibel_val = pa_spl.get_latest_decibel().unwrap();
     /// ```
     pub fn get_latest_decibel(&mut self) -> Result<u8, Error<E>> {
@@ -334,7 +383,14 @@ where
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```no_run
+    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+    /// use pa_spl::PaSpl;
+    ///
+    /// let expectations = vec![];
+    /// let mut i2c_mock = I2cMock::new(&expectations);
+    /// let mut pa_spl = PaSpl::new(i2c_mock);
+    ///
     /// let max_decibel_val = pa_spl.get_max_decibel().unwrap();
     /// ```
     pub fn get_max_decibel(&mut self) -> Result<u8, Error<E>> {
@@ -353,7 +409,14 @@ where
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```no_run
+    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+    /// use pa_spl::PaSpl;
+    ///
+    /// let expectations = vec![];
+    /// let mut i2c_mock = I2cMock::new(&expectations);
+    /// let mut pa_spl = PaSpl::new(i2c_mock);
+    ///
     /// let min_decibel_val = pa_spl.get_min_decibel().unwrap();
     /// ```
     pub fn get_min_decibel(&mut self) -> Result<u8, Error<E>> {
@@ -370,7 +433,14 @@ where
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```no_run
+    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+    /// use pa_spl::PaSpl;
+    ///
+    /// let expectations = vec![];
+    /// let mut i2c_mock = I2cMock::new(&expectations);
+    /// let mut pa_spl = PaSpl::new(i2c_mock);
+    ///
     /// let val = pa_spl.get_scratch().unwrap();
     /// ```
     pub fn get_scratch(&mut self) -> Result<u8, Error<E>> {
@@ -389,7 +459,14 @@ where
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```no_run
+    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+    /// use pa_spl::PaSpl;
+    ///
+    /// let expectations = vec![];
+    /// let mut i2c_mock = I2cMock::new(&expectations);
+    /// let mut pa_spl = PaSpl::new(i2c_mock);
+    ///
     /// let result = pa_spl.reset();
     /// ```
     pub fn reset(&mut self) -> Result<(), Error<E>> {
@@ -407,7 +484,14 @@ where
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```no_run
+    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+    /// use pa_spl::PaSpl;
+    ///
+    /// let expectations = vec![];
+    /// let mut i2c_mock = I2cMock::new(&expectations);
+    /// let mut pa_spl = PaSpl::new(i2c_mock);
+    ///
     /// let new_avg_time_ms = 125;
     /// let result = pa_spl.set_avg_time(new_avg_time_ms);
     /// ```
@@ -430,9 +514,16 @@ where
     ///
     /// # Examples
     ///
-    /// ```ignore
-    /// let reg_control = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
-    /// reg_control.set_filter_setting(FilterSetting::CWeighting);
+    /// ```no_run
+    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+    /// use pa_spl::{ControlRegister, FilterSetting, PaSpl, REG_CONTROL_DEFAULT};
+    ///
+    /// let expectations = vec![];
+    /// let mut i2c_mock = I2cMock::new(&expectations);
+    /// let mut pa_spl = PaSpl::new(i2c_mock);
+    ///
+    /// let mut reg_control = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
+    /// reg_control.set_filter(FilterSetting::CWeighting);
     /// let result = pa_spl.set_control_register(reg_control);
     /// ```
     pub fn set_control_register(&mut self, reg: ControlRegister) -> Result<(), Error<E>> {
@@ -449,7 +540,14 @@ where
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```no_run
+    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+    /// use pa_spl::PaSpl;
+    ///
+    /// let expectations = vec![];
+    /// let mut i2c_mock = I2cMock::new(&expectations);
+    /// let mut pa_spl = PaSpl::new(i2c_mock);
+    ///
     /// let gain = 42;
     /// let result = pa_spl.set_gain(gain);
     /// ```
@@ -468,7 +566,14 @@ where
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```no_run
+    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+    /// use pa_spl::PaSpl;
+    ///
+    /// let expectations = vec![];
+    /// let mut i2c_mock = I2cMock::new(&expectations);
+    /// let mut pa_spl = PaSpl::new(i2c_mock);
+    ///
     /// let scratch_val = 0x99;
     /// let result = pa_spl.set_scratch(scratch_val);
     /// ```
