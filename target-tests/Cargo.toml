@@ -1,7 +1,8 @@
 [package]
-authors = ["Jason Scott"]
-edition = "2021"
 name = "target-tests"
+description = "Hardware-in-the-loop test suite using a PCB Artists SPL module and STM32F3 Discovery"
+authors = ["Jason Scott <>"]
+edition = "2021"
 publish = false
 version = "0.1.0"
 
