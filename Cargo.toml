@@ -3,7 +3,6 @@ name = "pa-spl"
 description = "A no-std embedded-hal I2C driver for the PCB Artists SPL module"
 authors = ["Jason Scott <>"]
 categories = ["embedded", "no-std"]
-# documentation = "" # TODO
 edition = "2021"
 exclude = [
     "/.github",
