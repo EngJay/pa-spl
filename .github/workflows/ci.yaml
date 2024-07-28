@@ -11,14 +11,15 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/engjay/build-rustc-1-78-thumbv7em-nehf-meson:0.1.0
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-      options: -h gha.ci.build
+    strategy:
+      matrix:
+        rust: [1.60.0, stable, beta, nightly]
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
       - name: Build driver (release)
         run: |
           cargo build --release
