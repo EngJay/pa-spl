@@ -5,6 +5,13 @@ authors = ["Jason Scott <>"]
 categories = ["embedded", "no-std"]
 # documentation = "" # TODO
 edition = "2021"
+exclude = [
+    ".github/*",
+    ".vscode/*",
+    "docs/pull_request_template.md",
+    "docs/vendor/*",
+
+]
 homepage = ""
 keywords = [
     "audio",
