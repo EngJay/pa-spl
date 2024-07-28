@@ -1,7 +1,6 @@
-# PCB Artists I2C SPL Module Driver
+# Driver for PCB Artists I2C SPL Module
 
 ![Build Status](https://github.com/engjay/pcb-artists-i2c-spl-module-driver-rust/actions/workflows/ci.yaml/badge.svg)
-<!-- [![Latest Version]][crates.io] [![pa_spl msrv]][Rust 1.31] [![pa_spl msrv]][Rust 1.56] -->
 
 *A Rust `no_std` [embedded-hal](https://github.com/rust-embedded/embedded-hal) driver for the
 [PCB Artists I2C Sound Level module](https://pcbartists.com/product/i2c-decibel-sound-level-meter-module/).*
