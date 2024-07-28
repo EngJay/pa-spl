@@ -61,7 +61,7 @@ for a complete example for a STM32F3 Discovery.
 ## Minimum Supported Rust Version (MSRV)
 
 This crate is guaranteed to compile on stable Rust
-[1.60](https://releases.rs/docs/1.60.0/) and up. It might compile with older
+[1.65](https://releases.rs/docs/1.60.0/) and up. It might compile with older
 versions but that may change in any new patch release.
 
 See [here](https://github.com/EngJay/pa-spl/tree/main/docs/msrv.md) for details

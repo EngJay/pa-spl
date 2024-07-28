@@ -17,7 +17,7 @@ license = "MIT OR Apache-2.0"
 name = "pa-spl"
 readme = "README.md"
 repository = "https://github.com/EngJay/pa-spl"
-rust-version = "1.60"
+rust-version = "1.65"
 version = "0.1.0"
 
 [dependencies]

@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust: [1.60.0, stable, beta, nightly]
+        rust: [1.65.0, stable, beta, nightly]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Rust toolchain
