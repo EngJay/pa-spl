@@ -7,7 +7,7 @@
 
 - [Example](https://github.com/EngJay/pa-spl/blob/main/examples/read-decibel-value/README.md)
   ([STM32F3 Discovery](https://www.st.com/en/evaluation-tools/stm32f3discovery.html))
-- API Documentation <!-- TODO -->
+- [API Documentation](https://docs.rs/pa-spl/0.1.0)
 - [Vendor Documentation](docs/vendor/README.md)
 - [Release Notes](https://github.com/EngJay/pa-spl/releases)
 
