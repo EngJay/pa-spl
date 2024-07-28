@@ -49,11 +49,12 @@ jobs:
           cargo test
       - name: Install Miri
         if: matrix.rust == 'nightly'
-        run: /
+        run: |
           rustup toolchain install nightly --component miri
       - name: Run unit tests through Miri undefined behavior detection
         if: matrix.rust == 'nightly'
-        run: cargo miri test
+        run: |
+          cargo miri test
 
   analysis:
     name: Analysis
