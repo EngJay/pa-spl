@@ -101,7 +101,7 @@ mod tests {
     #[test]
     fn confirm_device_id(state: &mut State) {
         // The device ID is not published and will differ from device to device,
-        // so this only checks the a valid response is received.
+        // so this only checks that a valid response is received.
         let result = state.pa_spl.get_device_id();
         assert!(result.is_ok());
     }
