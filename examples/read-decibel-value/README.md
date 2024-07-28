@@ -16,7 +16,7 @@ Hardware setup:
 - Connect the SCL and SDA pins of the sensor to pins PB6 and PB7, respectively,
   on the dev board.
 - Connect the TX and RX pins of your TTL-to-USB converter to pins PC11 and PC10,
-  respectively, and connect the ground pin to matching pin on the board.
+  respectively, and connect the ground pin to a matching pin on the board.
 
 Then, open a shell and run OpenOCD, to which a similar response as shown here
 should be received if the board is connected with the onboard ST-Link debugger.
