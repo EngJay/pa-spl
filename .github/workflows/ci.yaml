@@ -44,9 +44,12 @@ jobs:
           toolchain: ${{ matrix.rust }}
       - name: Install target needed
         run: rustup target add thumbv7em-none-eabihf
-      - name: Run unit tests with coverage
+      - name: Run unit tests
         run: |
           cargo test
+      - name: Run unit tests through Miri undefined behavior detection
+        if: matrix.rust == 'nightly'
+        run: cargo miri test
 
   analysis:
     name: Analysis
