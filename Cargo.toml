@@ -6,8 +6,9 @@ categories = ["embedded", "no-std"]
 # documentation = "" # TODO
 edition = "2021"
 exclude = [
-    ".github/*",
-    ".vscode/*",
+    "/.github",
+    "/.vscode",
+    "/.gitignore",
     "docs/pull_request_template.md",
     "docs/vendor/*",
 
