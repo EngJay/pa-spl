@@ -159,6 +159,7 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// # Examples
+    ///
     /// ```ignore
     /// // Configure clocks.
     /// let device_periphs = unwrap!(pac::Peripherals::take());
