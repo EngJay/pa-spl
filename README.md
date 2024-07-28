@@ -70,7 +70,7 @@ on how the MSRV may be upgraded.
 ## Minimum Supported Embedded HAL Version
 
 TL;DR: This initial release only supports embedded-hal 0.2 and support for the
-1.0 version will be added in subsequent release.
+1.0 version will be added in a subsequent release.
 
 This crate depends on the [embedded-hal](https://crates.io/crates/embedded-hal)
 crate as it is a driver for use with embedded-hal. Embedded versioning typically

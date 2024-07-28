@@ -5,8 +5,8 @@ use bitfield_struct::bitfield;
 use defmt::Format;
 use embedded_hal::blocking::i2c;
 
-/// PCB Artists SPL Module I2C address.
-const DEVICE_ADDR: u8 = 0x48;
+/// PCB Artists SPL Module I2C default address.
+const DEVICE_ADDR_DEFAULT: u8 = 0x48;
 
 /// CONTROL register address.
 const REG_CONTROL: u8 = 0x06;
@@ -134,6 +134,7 @@ where
     I2C: i2c::Read + i2c::Write + i2c::WriteRead,
 {
     i2c: Option<I2C>,
+    device_addr: u8,
 }
 
 /// A driver error.
@@ -190,7 +191,26 @@ where
     /// let pa_spl = PaSpl::new(i2c);
     /// ```
     pub fn new(i2c: I2C) -> Self {
-        Self { i2c: Some(i2c) }
+        Self {
+            i2c: Some(i2c),
+            device_addr: DEVICE_ADDR_DEFAULT,
+        }
+    }
+
+    /// Sets a new I2C device address.
+    ///
+    /// The published device address is the default but the vendor's website
+    /// states that it is possible to order a device with a custom address.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// let custom_device_addr: u8 = 0x99;
+    /// pa_spl.set_device_addr(custom_device_addr);
+    /// ```
+    ///
+    pub fn set_device_addr(&mut self, addr: u8) {
+        self.device_addr = addr;
     }
 
     /// Gets the 16-bit averaging time in ms from registers TAVG high and TAVG low (0x07 and 0x08).
@@ -491,7 +511,7 @@ where
         self.i2c
             .as_mut()
             .ok_or(Error::NoI2cInstance)?
-            .write_read(DEVICE_ADDR, &[reg], &mut buffer)
+            .write_read(self.device_addr, &[reg], &mut buffer)
             .map_err(Error::I2c)?;
         Ok(buffer[0])
     }
@@ -501,7 +521,7 @@ where
         self.i2c
             .as_mut()
             .ok_or(Error::NoI2cInstance)?
-            .write_read(DEVICE_ADDR, &[start_reg], buffer)
+            .write_read(self.device_addr, &[start_reg], buffer)
             .map_err(Error::I2c)?;
         Ok(())
     }
@@ -511,7 +531,7 @@ where
         self.i2c
             .as_mut()
             .ok_or(Error::NoI2cInstance)?
-            .write(DEVICE_ADDR, &[reg, value])
+            .write(self.device_addr, &[reg, value])
             .map_err(Error::I2c)
     }
 
@@ -524,7 +544,7 @@ where
         self.i2c
             .as_mut()
             .ok_or(Error::NoI2cInstance)?
-            .write(DEVICE_ADDR, &[reg, buffer[0], buffer[1]])
+            .write(self.device_addr, &[reg, buffer[0], buffer[1]])
             .map_err(Error::I2c)
     }
 }
@@ -547,9 +567,23 @@ mod tests {
     const REG_TAVG_LOW_DEFAULT_BYTE: u8 = 0xE8;
 
     #[test]
+    fn confirm_set_device_addr() {
+        let expectations = vec![];
+        let i2c_mock = I2cMock::new(&expectations);
+
+        let mut pa_spl = PaSpl::new(i2c_mock);
+        let new_device_addr: u8 = 0x99;
+        pa_spl.set_device_addr(new_device_addr);
+        assert_eq!(new_device_addr, pa_spl.device_addr);
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    #[test]
     fn confirm_device_id() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REGS_DEVICE_ID[0]],
             vec![0x01, 0x02, 0x03, 0x04],
         )];
@@ -566,7 +600,7 @@ mod tests {
     #[test]
     fn confirm_firmware_version() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_VERSION],
             vec![DEVICE_VER_MEMS_LTS_ASA],
         )];
@@ -583,7 +617,7 @@ mod tests {
     #[test]
     fn confirm_get_avg_time() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_TAVG_HIGH],
             vec![REG_TAVG_HIGH_DEFAULT_BYTE, REG_TAVG_LOW_DEFAULT_BYTE],
         )];
@@ -600,7 +634,7 @@ mod tests {
     #[test]
     fn confirm_get_control_register() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_CONTROL],
             vec![REG_CONTROL_DEFAULT], // 0b0000_0010
         )];
@@ -619,7 +653,7 @@ mod tests {
     #[test]
     fn confirm_get_gain() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_GAIN],
             vec![18],
         )];
@@ -637,7 +671,7 @@ mod tests {
     #[test]
     fn confirm_get_latest_decibel() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_DECIBEL],
             vec![0x12],
         )];
@@ -654,7 +688,7 @@ mod tests {
     #[test]
     fn confirm_get_max_decibel() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_MAX],
             vec![0x12],
         )];
@@ -671,7 +705,7 @@ mod tests {
     #[test]
     fn confirm_get_min_decibel() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_MIN],
             vec![0x12],
         )];
@@ -688,7 +722,7 @@ mod tests {
     #[test]
     fn confirm_get_scratch() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_SCRATCH],
             vec![0x99],
         )];
@@ -706,7 +740,7 @@ mod tests {
     #[test]
     fn confirm_reset() {
         let expectations = vec![I2cTransaction::write(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_RESET, 0b0000_1000],
         )];
         let i2c_mock = I2cMock::new(&expectations);
@@ -725,7 +759,7 @@ mod tests {
         let tavg_high_expected_byte: u8 = 0x00;
         let tavg_low_expected_byte: u8 = 0x7D;
         let expectations = vec![I2cTransaction::write(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![
                 REG_TAVG_HIGH,
                 tavg_high_expected_byte,
@@ -746,12 +780,12 @@ mod tests {
     fn confirm_set_control_register() {
         let expectations = vec![
             I2cTransaction::write_read(
-                DEVICE_ADDR,
+                DEVICE_ADDR_DEFAULT,
                 vec![REG_CONTROL],
                 vec![REG_CONTROL_DEFAULT], // 0b0000_0010
             ),
             I2cTransaction::write(
-                DEVICE_ADDR,
+                DEVICE_ADDR_DEFAULT,
                 vec![REG_CONTROL, 0b0000_0100], // 0b0000_0100
             ),
         ];
@@ -773,7 +807,7 @@ mod tests {
     fn confirm_set_gain() {
         let new_gain_val: u8 = 43;
         let expectations = vec![I2cTransaction::write(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_GAIN, new_gain_val],
         )];
         let i2c_mock = I2cMock::new(&expectations);
@@ -790,7 +824,7 @@ mod tests {
     fn confirm_set_scratch() {
         let scratch_write_val: u8 = 0x99;
         let expectations = vec![I2cTransaction::write(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_SCRATCH, scratch_write_val],
         )];
         let i2c_mock = I2cMock::new(&expectations);
