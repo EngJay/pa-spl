@@ -6,12 +6,12 @@ use defmt_rtt as _; // defmt transport.
 use panic_probe as _; // Panic handler.
 use stm32f3xx_hal as _; // Memory layout.
 
-use pa_spl::{ControlRegister, Error, FilterSetting, PaSpl};
+use pa_spl::PaSpl;
 use stm32f3xx_hal::gpio::{
     gpiob::{PB6, PB7},
     Alternate, OpenDrain,
 };
-use stm32f3xx_hal::{i2c::I2c, pac, prelude::*};
+use stm32f3xx_hal::{i2c::I2c, pac};
 
 struct State {
     pa_spl: PaSpl<I2c<pac::I2C1, (PB6<Alternate<OpenDrain, 4>>, PB7<Alternate<OpenDrain, 4>>)>>,
@@ -41,9 +41,9 @@ impl<E: Format> Format for WrappedError<E> {
 mod tests {
     use super::State;
     use crate::delay_ms;
-    use defmt::{assert_eq, debug, error, unwrap};
-    use pa_spl::{ControlRegister, Error, FilterSetting, PaSpl, REG_CONTROL_DEFAULT};
-    use stm32f3xx_hal::{gpio::gpiob, i2c::I2c, pac, prelude::*};
+    use defmt::{assert_eq, unwrap};
+    use pa_spl::{ControlRegister, FilterSetting, PaSpl, REG_CONTROL_DEFAULT};
+    use stm32f3xx_hal::{i2c::I2c, pac, prelude::*};
 
     #[init]
     fn setup() -> State {
