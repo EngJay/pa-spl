@@ -278,8 +278,9 @@ is in the `target-tests` directory and is configured to use
 [probe-rs](https://probe.rs/) to automatically build the tests, flash the
 target, run the tests, and report results.
 
-To run the HIL tests, connect the hardware according to the STM32F3 Discovery
-example provided in the repo (minus the TTL-USB convertor) with a spectrum
+To run the HIL tests, connect the hardware according to the
+[STM32F3 Discovery example](https://github.com/EngJay/pa-spl/blob/main/examples/read-decibel-value/README.md)
+provided in the repo (minus the TTL-USB convertor) with a spectrum
 analysis version of the PCB Artists sensor, 0x32 or 0x33, then:
 
 ```cli
