@@ -1,7 +1,7 @@
 [package]
 name = "pa-spl"
 description = "A no-std embedded-hal I2C driver for the PCB Artists SPL module"
-authors = ["Jason Scott <>"]
+authors = ["Jason Scott <reachme@jasonpscott.com>"]
 categories = ["embedded", "no-std"]
 edition = "2021"
 exclude = [

@@ -1,7 +1,7 @@
 [package]
 name = "example-read-decibel-value"
 description = "Example of reading SPL with the pa-spl driver, PCB Artists SPL module, and STM32F3 Discovery"
-authors = ["Jason Scott <>"]
+authors = ["Jason Scott <reachme@jasonpscott.com>"]
 edition = "2021"
 publish = false
 readme = "README.md"
