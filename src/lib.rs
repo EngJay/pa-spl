@@ -157,16 +157,6 @@ where
     /// # Errors
     ///
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
-    /// use pa_spl::PaSpl;
-    ///
-    /// let expectations = vec![];
-    /// let i2c_mock = I2cMock::new(&expectations);
-    /// let pa_spl = PaSpl::new(i2c_mock);
     /// ```
     pub fn new(i2c: I2C) -> Self {
         Self {
@@ -179,19 +169,6 @@ where
     ///
     /// The published device address is the default but the vendor's website
     /// states that it is possible to order a device with a custom address.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
-    /// use pa_spl::PaSpl;
-    ///
-    /// let expectations = vec![];
-    /// let mut i2c_mock = I2cMock::new(&expectations);
-    /// let mut pa_spl = PaSpl::new(i2c_mock);
-    ///
-    /// let custom_device_addr: u8 = 0x99;
-    /// pa_spl.set_device_addr(custom_device_addr);
     /// ```
     ///
     pub fn set_device_addr(&mut self, addr: u8) {
@@ -205,18 +182,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
-    /// use pa_spl::PaSpl;
-    ///
-    /// let expectations = vec![];
-    /// let mut i2c_mock = I2cMock::new(&expectations);
-    /// let mut pa_spl = PaSpl::new(i2c_mock);
-    ///
-    /// let avg_time_ms = pa_spl.get_avg_time().unwrap();
     /// ```
     ///
     pub fn get_avg_time(&mut self) -> Result<u16, Error<E>> {
@@ -236,18 +201,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
-    /// use pa_spl::PaSpl;
-    ///
-    /// let expectations = vec![];
-    /// let mut i2c_mock = I2cMock::new(&expectations);
-    /// let mut pa_spl = PaSpl::new(i2c_mock);
-    ///
-    /// let reg_control = pa_spl.get_control_register().unwrap();
     /// ```
     pub fn get_control_register(&mut self) -> Result<ControlRegister, Error<E>> {
         let control_reg_raw = self.read_byte(REG_CONTROL)?;
@@ -261,18 +214,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
-    /// use pa_spl::PaSpl;
-    ///
-    /// let expectations = vec![];
-    /// let mut i2c_mock = I2cMock::new(&expectations);
-    /// let mut pa_spl = PaSpl::new(i2c_mock);
-    ///
-    /// let device_id = pa_spl.get_device_id().unwrap();
     /// ```
     ///
     pub fn get_device_id(&mut self) -> Result<u32, Error<E>> {
@@ -295,18 +236,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
-    /// use pa_spl::PaSpl;
-    ///
-    /// let expectations = vec![];
-    /// let mut i2c_mock = I2cMock::new(&expectations);
-    /// let mut pa_spl = PaSpl::new(i2c_mock);
-    ///
-    /// let firmware_version = pa_spl.get_firmware_version().unwrap();
     /// ```
     pub fn get_firmware_version(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_VERSION)
@@ -326,18 +255,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
-    /// use pa_spl::PaSpl;
-    ///
-    /// let expectations = vec![];
-    /// let mut i2c_mock = I2cMock::new(&expectations);
-    /// let mut pa_spl = PaSpl::new(i2c_mock);
-    ///
-    /// let gain_val = pa_spl.get_gain().unwrap();
     /// ```
     #[cfg(feature = "external_mic")]
     pub fn get_gain(&mut self) -> Result<u8, Error<E>> {
@@ -354,18 +271,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
-    /// use pa_spl::PaSpl;
-    ///
-    /// let expectations = vec![];
-    /// let mut i2c_mock = I2cMock::new(&expectations);
-    /// let mut pa_spl = PaSpl::new(i2c_mock);
-    ///
-    /// let latest_decibel_val = pa_spl.get_latest_decibel().unwrap();
     /// ```
     pub fn get_latest_decibel(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_DECIBEL)
@@ -380,18 +285,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
-    /// use pa_spl::PaSpl;
-    ///
-    /// let expectations = vec![];
-    /// let mut i2c_mock = I2cMock::new(&expectations);
-    /// let mut pa_spl = PaSpl::new(i2c_mock);
-    ///
-    /// let max_decibel_val = pa_spl.get_max_decibel().unwrap();
     /// ```
     pub fn get_max_decibel(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_MAX)
@@ -406,18 +299,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
-    /// use pa_spl::PaSpl;
-    ///
-    /// let expectations = vec![];
-    /// let mut i2c_mock = I2cMock::new(&expectations);
-    /// let mut pa_spl = PaSpl::new(i2c_mock);
-    ///
-    /// let min_decibel_val = pa_spl.get_min_decibel().unwrap();
     /// ```
     pub fn get_min_decibel(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_MIN)
@@ -430,18 +311,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
-    /// use pa_spl::PaSpl;
-    ///
-    /// let expectations = vec![];
-    /// let mut i2c_mock = I2cMock::new(&expectations);
-    /// let mut pa_spl = PaSpl::new(i2c_mock);
-    ///
-    /// let val = pa_spl.get_scratch().unwrap();
     /// ```
     pub fn get_scratch(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_SCRATCH)
@@ -456,18 +325,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
-    /// use pa_spl::PaSpl;
-    ///
-    /// let expectations = vec![];
-    /// let mut i2c_mock = I2cMock::new(&expectations);
-    /// let mut pa_spl = PaSpl::new(i2c_mock);
-    ///
-    /// let result = pa_spl.reset();
     /// ```
     pub fn reset(&mut self) -> Result<(), Error<E>> {
         let reg_reset = ResetRegister::new().with_system_reset(true);
@@ -481,19 +338,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
-    /// use pa_spl::PaSpl;
-    ///
-    /// let expectations = vec![];
-    /// let mut i2c_mock = I2cMock::new(&expectations);
-    /// let mut pa_spl = PaSpl::new(i2c_mock);
-    ///
-    /// let new_avg_time_ms = 125;
-    /// let result = pa_spl.set_avg_time(new_avg_time_ms);
     /// ```
     pub fn set_avg_time(&mut self, ms: u16) -> Result<(), Error<E>> {
         // Convert the average time in ms to high and low bytes.
@@ -511,20 +355,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
-    /// use pa_spl::{ControlRegister, FilterSetting, PaSpl, REG_CONTROL_DEFAULT};
-    ///
-    /// let expectations = vec![];
-    /// let mut i2c_mock = I2cMock::new(&expectations);
-    /// let mut pa_spl = PaSpl::new(i2c_mock);
-    ///
-    /// let mut reg_control = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
-    /// reg_control.set_filter(FilterSetting::CWeighting);
-    /// let result = pa_spl.set_control_register(reg_control);
     /// ```
     pub fn set_control_register(&mut self, reg: ControlRegister) -> Result<(), Error<E>> {
         self.write_byte(REG_CONTROL, reg.into_bits())
@@ -537,19 +367,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
-    /// use pa_spl::PaSpl;
-    ///
-    /// let expectations = vec![];
-    /// let mut i2c_mock = I2cMock::new(&expectations);
-    /// let mut pa_spl = PaSpl::new(i2c_mock);
-    ///
-    /// let gain = 42;
-    /// let result = pa_spl.set_gain(gain);
     /// ```
     #[cfg(feature = "external_mic")]
     pub fn set_gain(&mut self, value: u8) -> Result<(), Error<E>> {
@@ -563,19 +380,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
-    /// use pa_spl::PaSpl;
-    ///
-    /// let expectations = vec![];
-    /// let mut i2c_mock = I2cMock::new(&expectations);
-    /// let mut pa_spl = PaSpl::new(i2c_mock);
-    ///
-    /// let scratch_val = 0x99;
-    /// let result = pa_spl.set_scratch(scratch_val);
     /// ```
     pub fn set_scratch(&mut self, value: u8) -> Result<(), Error<E>> {
         self.write_byte(REG_SCRATCH, value)
