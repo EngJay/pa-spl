@@ -391,7 +391,7 @@ where
     }
 
     /// Reads a single byte from an I2C register of the device.
-    /// 
+    ///
     fn read_byte(&mut self, reg: u8) -> Result<u8, Error<E>> {
         let mut buffer = [0; 1];
         self.i2c
@@ -403,7 +403,7 @@ where
     }
 
     /// Read multiple bytes from a starting register.
-    /// 
+    ///
     fn read_bytes(&mut self, start_reg: u8, buffer: &mut [u8]) -> Result<(), Error<E>> {
         self.i2c
             .as_mut()
@@ -414,7 +414,7 @@ where
     }
 
     /// Writes a single byte to an I2C register of the device.
-    /// 
+    ///
     fn write_byte(&mut self, reg: u8, value: u8) -> Result<(), Error<E>> {
         self.i2c
             .as_mut()
@@ -424,7 +424,7 @@ where
     }
 
     /// Writes two bytes from a starting register.
-    /// 
+    ///
     fn write_two_bytes(&mut self, reg: u8, buffer: &[u8]) -> Result<(), Error<E>> {
         if buffer.len() > 2 {
             return Err(Error::BufferOverflow);
