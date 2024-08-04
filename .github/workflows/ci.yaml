@@ -28,6 +28,7 @@
 #    - Uploads the generated documentation as an artifact named 'docs'.
 # 
 name: CI
+run-name: CI build initiated by ${{ github.actor }}
 
 on:
   push:
@@ -35,6 +36,10 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
