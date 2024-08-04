@@ -13,9 +13,10 @@
 
 ## Features
 
-- Read current SPL value averaged over TAVG with a range of 35 dB to 120 dB
-  (+/-2 dB) from 30 Hz to 8 kHz.
-- Adjustable TAVG window for averaging of SPL value from 10 ms to 10,000 ms.
+- Read current SPL value averaged over a time window (TAVG register) with a
+  range of 35 dB to 120 dB (+/-2 dB) from 30 Hz to 8 kHz.
+- Adjustable time window (TAVG register) for averaging of SPL value from 10 ms
+  to 10,000 ms.
 - Read min/max SPL value sensed between power cycle or reset.
 
 ## Usage
@@ -315,6 +316,14 @@ of embedded-hal rather than the recent 1.0 release. Due to this, the minimum
 supported embedded-hal version of this crate is 0.2 and the 1.0 version is not
 yet supported in this initial release. Support for the 1.0 version of
 embedded-hal will be added in a subsequent release.
+
+## Glossary
+
+- **API**: Application Programming Interface.
+- **HAL**: Hardware Abstraction Layer.
+- **PCB**: Printed Circuit Board.
+- **I2C**: Inter-Intergrated Circuit protocol.
+- **SPL**: Sound Pressure Level.
 
 #### License
 
