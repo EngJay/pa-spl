@@ -10,7 +10,6 @@ exclude = [
     "/.gitignore",
     "docs/pull_request_template.md",
     "docs/vendor/*",
-
 ]
 homepage = ""
 keywords = [
