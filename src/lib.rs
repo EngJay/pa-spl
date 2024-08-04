@@ -157,7 +157,7 @@ where
     /// # Errors
     ///
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
-    /// ```
+    ///
     pub fn new(i2c: I2C) -> Self {
         Self {
             i2c: Some(i2c),
@@ -169,7 +169,6 @@ where
     ///
     /// The published device address is the default but the vendor's website
     /// states that it is possible to order a device with a custom address.
-    /// ```
     ///
     pub fn set_device_addr(&mut self, addr: u8) {
         self.device_addr = addr;
@@ -182,7 +181,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    /// ```
     ///
     pub fn get_avg_time(&mut self) -> Result<u16, Error<E>> {
         let mut buffer: [u8; 2] = [0; 2];
@@ -201,7 +199,7 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    /// ```
+    ///
     pub fn get_control_register(&mut self) -> Result<ControlRegister, Error<E>> {
         let control_reg_raw = self.read_byte(REG_CONTROL)?;
         Ok(ControlRegister::from_bits(control_reg_raw))
@@ -214,7 +212,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    /// ```
     ///
     pub fn get_device_id(&mut self) -> Result<u32, Error<E>> {
         let mut buffer: [u8; 4] = [0; 4];
@@ -236,7 +233,7 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    /// ```
+    ///
     pub fn get_firmware_version(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_VERSION)
     }
@@ -255,7 +252,7 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    /// ```
+    ///
     #[cfg(feature = "external_mic")]
     pub fn get_gain(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_GAIN)
@@ -271,7 +268,7 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    /// ```
+    ///
     pub fn get_latest_decibel(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_DECIBEL)
     }
@@ -285,7 +282,7 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    /// ```
+    ///
     pub fn get_max_decibel(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_MAX)
     }
@@ -299,7 +296,7 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    /// ```
+    ///
     pub fn get_min_decibel(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_MIN)
     }
@@ -311,7 +308,7 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    /// ```
+    ///
     pub fn get_scratch(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_SCRATCH)
     }
@@ -325,7 +322,7 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    /// ```
+    ///
     pub fn reset(&mut self) -> Result<(), Error<E>> {
         let reg_reset = ResetRegister::new().with_system_reset(true);
         self.write_byte(REG_RESET, reg_reset.into_bits())
@@ -338,7 +335,7 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    /// ```
+    ///
     pub fn set_avg_time(&mut self, ms: u16) -> Result<(), Error<E>> {
         // Convert the average time in ms to high and low bytes.
         let tavg_high_byte: u8 = (ms >> 8) as u8;
@@ -355,7 +352,7 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    /// ```
+    ///
     pub fn set_control_register(&mut self, reg: ControlRegister) -> Result<(), Error<E>> {
         self.write_byte(REG_CONTROL, reg.into_bits())
     }
@@ -380,12 +377,13 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    /// ```
+    ///
     pub fn set_scratch(&mut self, value: u8) -> Result<(), Error<E>> {
         self.write_byte(REG_SCRATCH, value)
     }
 
     /// Destroys this driver and releases the I2C bus.
+    ///
     pub fn destroy(&mut self) -> I2C {
         self.i2c
             .take()
@@ -393,6 +391,7 @@ where
     }
 
     /// Reads a single byte from an I2C register of the device.
+    /// 
     fn read_byte(&mut self, reg: u8) -> Result<u8, Error<E>> {
         let mut buffer = [0; 1];
         self.i2c
@@ -404,6 +403,7 @@ where
     }
 
     /// Read multiple bytes from a starting register.
+    /// 
     fn read_bytes(&mut self, start_reg: u8, buffer: &mut [u8]) -> Result<(), Error<E>> {
         self.i2c
             .as_mut()
@@ -414,6 +414,7 @@ where
     }
 
     /// Writes a single byte to an I2C register of the device.
+    /// 
     fn write_byte(&mut self, reg: u8, value: u8) -> Result<(), Error<E>> {
         self.i2c
             .as_mut()
@@ -423,6 +424,7 @@ where
     }
 
     /// Writes two bytes from a starting register.
+    /// 
     fn write_two_bytes(&mut self, reg: u8, buffer: &[u8]) -> Result<(), Error<E>> {
         if buffer.len() > 2 {
             return Err(Error::BufferOverflow);
