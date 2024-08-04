@@ -1,3 +1,32 @@
+# This CI workflow ensures that the project is built, tested, analyzed, and
+# documented across the supoprted Rust toolchains, enhancing the reliability and
+# quality of the codebase.
+# 
+# The workflow is triggered by:
+# - Pushes to the 'main' branch.
+# - Pull requests targeting the 'main' branch.
+# - Manual dispatch.
+# 
+# The workflow consists of four jobs:
+# 
+# 1. **Build**:
+#    - Uses a matrix to test against multiple Rust toolchains (1.65.0, stable, beta, nightly).
+#    - Builds the project in release mode.
+#    - Builds an example located in 'examples/read-decibel-value'.
+# 
+# 2. **Unit Tests**:
+#    - Uses a matrix to test against multiple Rust toolchains (1.65.0, stable, beta, nightly).
+#    - Runs the unit tests.
+#    - If the nightly toolchain is used, installs Miri and runs unit tests through Miri for undefined behavior detection.
+# 
+# 3. **Analysis**:
+#    - Runs Clippy for linting, allowing all lints.
+#    - Runs rustfmt to check code formatting.
+# 
+# 4. **Docs**:
+#    - Generates the documentation using rustdoc.
+#    - Uploads the generated documentation as an artifact named 'docs'.
+# 
 name: CI
 
 on:
