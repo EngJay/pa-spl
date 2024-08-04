@@ -107,9 +107,15 @@ jobs:
       - name: Install target needed
         run: |
           rustup target add thumbv7em-none-eabihf
+      - name: Install Clippy
+        run: |
+          rustup component add clippy --toolchain ${{ matrix.rust }}
+      - name: Install Rustfmt
+        run: |
+          rustup component add rustfmt --toolchain ${{ matrix.rust }}
       - name: Run clippy
         run: |
-          cargo clippy -- -A clippy::all
+          cargo clippy -- -D warnings
       - name: Format
         run: |
           cargo fmt --all -- --check
