@@ -5,7 +5,7 @@
 *A Rust `no_std` [embedded-hal](https://github.com/rust-embedded/embedded-hal) driver for the
 [PCB Artists I2C Sound Level module](https://pcbartists.com/product/i2c-decibel-sound-level-meter-module/).*
 
-- [Example](https://github.com/EngJay/pa-spl/blob/main/examples/read-decibel-value/README.md)
+- [Example](https://github.com/EngJay/pa-spl/blob/v0.1.0/examples/read-decibel-value/README.md)
   ([STM32F3 Discovery](https://www.st.com/en/evaluation-tools/stm32f3discovery.html))
 - [API Documentation](https://docs.rs/pa-spl/0.1.0)
 - [Vendor Documentation](docs/vendor/README.md)
@@ -25,7 +25,7 @@ This example uses the SPL module with a STM32F3 Discovery development board and
 a USB-TTL converter.
 
 See the
-[example project](https://github.com/EngJay/pa-spl/blob/main/examples/read-decibel-value/README.md)
+[example project](https://github.com/EngJay/pa-spl/blob/v0.1.0/examples/read-decibel-value/README.md)
 for the complete example.
 
 <details>
@@ -281,13 +281,13 @@ cargo test
 ```
 
 The
-[HIL testing project](https://github.com/EngJay/pa-spl/tree/main/target-tests/README.md)
+[HIL testing project](https://github.com/EngJay/pa-spl/blob/v0.1.0/target-tests/README.md)
 is in the `target-tests` directory and is configured to use
 [probe-rs](https://probe.rs/) to automatically build the tests, flash the
 target, run the tests, and report results.
 
 To run the HIL tests, connect the hardware according to the
-[STM32F3 Discovery example](https://github.com/EngJay/pa-spl/blob/main/examples/read-decibel-value/README.md)
+[STM32F3 Discovery example](https://github.com/EngJay/pa-spl/blob/v0.1.0/examples/read-decibel-value/README.md)
 provided in the repo (minus the TTL-USB converter) with a spectrum
 analysis version of the PCB Artists sensor, firmware version 0x32 or 0x33 (the
 number read from the VERSION register), then:
@@ -308,7 +308,7 @@ This crate is guaranteed to compile on stable Rust
 [1.65](https://releases.rs/docs/1.60.0/) and up. It might compile with older
 versions but that may change in any new patch release.
 
-See [here](https://github.com/EngJay/pa-spl/tree/main/docs/msrv.md) for details
+See [here](https://github.com/EngJay/pa-spl/blob/v0.1.0/docs/msrv.md) for details
 on how the MSRV may be upgraded.
 
 ## Minimum Supported Embedded HAL Version
@@ -336,8 +336,8 @@ embedded-hal will be added in a subsequent release.
 #### License
 
 <sup>
-Licensed under either of <a href="https://github.com/EngJay/pa-spl/blob/main/LICENSE-APACHE">Apache License, Version
-2.0</a> or <a href="https://github.com/EngJay/pa-spl/blob/main/LICENSE-MIT">MIT license</a> at your option.
+Licensed under either of <a href="https://github.com/EngJay/pa-spl/blob/v0.1.0/LICENSE-APACHE">Apache License, Version
+2.0</a> or <a href="https://github.com/EngJay/pa-spl/blob/v0.1.0/LICENSE-MIT">MIT license</a> at your option.
 </sup>
 <br>
 <sub>
