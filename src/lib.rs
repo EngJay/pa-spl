@@ -138,7 +138,7 @@ where
 }
 
 /// A driver error.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Error<E> {
     /// I2C bus error.
     I2c(E),
