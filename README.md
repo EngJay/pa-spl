@@ -84,6 +84,9 @@ use stm32f3xx_hal::{delay::Delay, i2c::I2c, pac, prelude::*, serial::config, ser
 
 use core::fmt::Write;
 
+// Provide an implementation of a buffer writer in order to use the write!
+// macro.
+//
 struct BufWriter<'a> {
     buf: &'a mut [u8],
     pos: usize,
@@ -104,6 +107,9 @@ impl<'a> BufWriter<'a> {
     }
 }
 
+// Provide implementation of write_str in order to use the buffer writer with
+// the write! formatting macro.
+//
 impl<'a> core::fmt::Write for BufWriter<'a> {
     fn write_str(&mut self, s: &str) -> core::fmt::Result {
         let bytes = s.as_bytes();
@@ -252,6 +258,7 @@ fn main() -> ! {
         });
 
         // Limit algorithm to (1000 * (1 / UART_WRITE_DELAY_MS)) Hz.
+        //
         delay.delay_ms(ALGO_DELAY_MS);
     }
 }
@@ -281,8 +288,9 @@ target, run the tests, and report results.
 
 To run the HIL tests, connect the hardware according to the
 [STM32F3 Discovery example](https://github.com/EngJay/pa-spl/blob/main/examples/read-decibel-value/README.md)
-provided in the repo (minus the TTL-USB convertor) with a spectrum
-analysis version of the PCB Artists sensor, 0x32 or 0x33, then:
+provided in the repo (minus the TTL-USB converter) with a spectrum
+analysis version of the PCB Artists sensor, firmware version 0x32 or 0x33 (the
+number read from the VERSION register), then:
 
 ```cli
 cd target-tests
@@ -334,7 +342,7 @@ Licensed under either of <a href="https://github.com/EngJay/pa-spl/blob/main/LIC
 <br>
 <sub>
 Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in Serde by you, as defined in the Apache-2.0 license, shall be
+for inclusion in pa-spl by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
 </sub>
 
