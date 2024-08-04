@@ -1,6 +1,11 @@
 #![no_std]
 #![no_main]
 
+/// Hardware-in-the-loop (HIL) test suite for the pa-sql driver.
+/// 
+/// This HIL suite is configured to run minimal HIL tests using a STM32F3
+/// Discovery development board.
+
 use defmt::Format;
 use defmt_rtt as _; // defmt transport.
 use panic_probe as _; // Panic handler.
@@ -17,10 +22,12 @@ struct State {
     pa_spl: PaSpl<I2c<pac::I2C1, (PB6<Alternate<OpenDrain, 4>>, PB7<Alternate<OpenDrain, 4>>)>>,
 }
 
-// Define a newtype wrapper for Error<E>
+/// Define a newtype wrapper for Error<E>.
+///
 pub struct WrappedError<E>(pub pa_spl::Error<E>);
 
-// Implement Format for WrappedError<E>
+/// Implement Format for WrappedError<E>.
+///
 impl<E: Format> Format for WrappedError<E> {
     fn format(&self, f: defmt::Formatter) {
         match &self.0 {
@@ -48,10 +55,12 @@ mod tests {
     #[init]
     fn setup() -> State {
         // Enable and reset the cycle counter.
+        //
         let mut core_periphs = unwrap!(cortex_m::Peripherals::take());
         core_periphs.DCB.enable_trace();
 
         // Initialize I2C.
+        //
         let device_periphs = unwrap!(pac::Peripherals::take());
         let mut rcc = device_periphs.RCC.constrain();
         let mut flash = device_periphs.FLASH.constrain();
@@ -60,6 +69,7 @@ mod tests {
         let mut gpiob = device_periphs.GPIOB.split(&mut rcc.ahb);
 
         // Configure I2C1.
+        //
         let mut scl =
             gpiob
                 .pb6
@@ -86,6 +96,7 @@ mod tests {
     fn after_each(state: &mut State) {
         let _ = state.pa_spl.reset();
         // Short delay to allow for reset and settle.
+        //
         let ms = 3;
         delay_ms(ms);
     }
@@ -93,6 +104,7 @@ mod tests {
     #[test]
     fn confirm_firmware_version(state: &mut State) {
         // NOTE: The published version is 0x32 but this device returns 0x33.
+        //
         const EXPECTED: u8 = 0x33;
         let firmware_version = state.pa_spl.get_firmware_version().unwrap();
         assert_eq!(EXPECTED, firmware_version);
@@ -102,6 +114,7 @@ mod tests {
     fn confirm_device_id(state: &mut State) {
         // The device ID is not published and will differ from device to device,
         // so this only checks that a valid response is received.
+        //
         let result = state.pa_spl.get_device_id();
         assert!(result.is_ok());
     }
@@ -124,6 +137,7 @@ mod tests {
     fn confirm_get_max_decibel(state: &mut State) {
         // The value returned is a sensed value, so this only tests that a valid
         // result is returned.
+        //
         let result = state.pa_spl.get_max_decibel();
         assert!(result.is_ok());
     }
@@ -132,6 +146,7 @@ mod tests {
     fn confirm_get_min_decibel(state: &mut State) {
         // The value returned is a sensed value, so this only tests that a valid
         // result is returned.
+        //
         let result = state.pa_spl.get_min_decibel();
         assert!(result.is_ok());
     }
@@ -140,6 +155,7 @@ mod tests {
     fn confirm_read_latest_decibel(state: &mut State) {
         // The value returned is a sensed value, so this only tests that a valid
         // result is returned.
+        //
         let result = state.pa_spl.get_latest_decibel();
         assert!(result.is_ok());
     }
@@ -150,10 +166,12 @@ mod tests {
         assert!(result.is_ok());
 
         // Short delay to allow for reset and settle.
+        //
         let ms = 3;
         delay_ms(ms);
 
         // Confirm that the settings have been reset to the default.
+        //
         const EXPECTED: ControlRegister = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
         let reg_control = state.pa_spl.get_control_register().unwrap();
         assert_eq!(EXPECTED, reg_control);
@@ -202,9 +220,10 @@ mod tests {
 }
 
 /// Busy-wait loop to create a delay.
+/// 
 fn delay_ms(ms: u32) {
-    let cycles_per_ms = 8_000; // Assuming an 8 MHz clock (stm32f4-hal default for 303xc)
+    let cycles_per_ms = 8_000; // Assuming an 8 MHz clock (stm32f3-hal default for 303xc).
     for _ in 0..(ms * cycles_per_ms) {
-        cortex_m::asm::nop(); // No operation (NOP) to prevent optimization
+        cortex_m::asm::nop(); // No operation (NOP) to prevent optimization.
     }
 }
