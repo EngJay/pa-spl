@@ -12,7 +12,7 @@ change as defined by [SemVer](https://semver.org).
 
 The following rules will be followed when upgrading it:
 
-MSRV
+The MSRV:
 
 - will not be updated on any patch release: \_.\_.*Z*.
 - may be upgraded on any *major* or *minor* release: *X*.*Y*.\_.
