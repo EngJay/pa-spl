@@ -16,8 +16,8 @@ Set up the hardware:
 - connect the dev board to the machine running the tests via its ST-Link USB
   connection.  
 
-Then, run the tests with cargo, to which something like this response should be
-received.
+Then, run the tests with cargo. The received response is expected to be similar
+to the following:
 
 ```cli
 cargo test
