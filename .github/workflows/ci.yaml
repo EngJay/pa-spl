@@ -1,5 +1,5 @@
 # This CI workflow ensures that the project is built, tested, analyzed, and
-# documented across the supoprted Rust toolchains, enhancing the reliability and
+# documented across the supported Rust toolchains, enhancing the reliability and
 # quality of the codebase.
 # 
 # The workflow is triggered by:
