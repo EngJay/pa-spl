@@ -11,7 +11,7 @@ exclude = [
     "docs/pull_request_template.md",
     "docs/vendor/*",
 ]
-homepage = ""
+homepage = "https://github.com/EngJay/pa-spl"
 keywords = [
     "audio",
     "embedded",
