@@ -18,7 +18,6 @@ keywords = [
     "embedded-hal-driver",
     "no-std",
     "sound",
-    "spl",
 ]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
