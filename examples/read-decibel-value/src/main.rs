@@ -1,7 +1,7 @@
-// Reads the latest decibel value and prints it to UART4.
-
 #![no_main]
 #![no_std]
+
+/// Example usage of ps-spl that reads the latest decibel value and prints it to UART4.
 
 use cortex_m::asm;
 use cortex_m_rt::entry;
@@ -16,6 +16,8 @@ use stm32f3xx_hal::{delay::Delay, i2c::I2c, pac, prelude::*, serial::config, ser
 
 use core::fmt::Write;
 
+/// Provide implementation of a buffer writer in order to use the write! macro.
+///
 struct BufWriter<'a> {
     buf: &'a mut [u8],
     pos: usize,
@@ -36,6 +38,9 @@ impl<'a> BufWriter<'a> {
     }
 }
 
+/// Provide implementation of write_str in order to use the buffer writer with
+/// the write! formatting macro.
+///
 impl<'a> core::fmt::Write for BufWriter<'a> {
     fn write_str(&mut self, s: &str) -> core::fmt::Result {
         let bytes = s.as_bytes();
@@ -59,9 +64,9 @@ fn main() -> ! {
     // return of an Err or None instead of the desired value, which is of type
     // pac::Peripherals in this case.
     //
-    // Since this is an embedded application, it's not as simple as writing to,
+    // Since this is an embedded application, it's not as simple as writing to
     // stdout. This is a minimal example, so we'll drop into an inifinite loop
-    // to allow a debugger to find where the failure.
+    // to allow a debugger to find the failure.
     //
     let device_periphs = pac::Peripherals::take().unwrap_or_else(|| {
         loop {
@@ -85,7 +90,7 @@ fn main() -> ! {
     // Set up delay capability.
     //
     // Use the same unwrap method to get the core periphs, then
-    // create a delay abstrction using SysTick (SYST).
+    // create a delay abstraction using SysTick (SYST).
     //
     let core_periphs = cortex_m::Peripherals::take().unwrap_or_else(|| {
         loop {
@@ -152,12 +157,13 @@ fn main() -> ! {
     let mut pa_spl = PaSpl::new(i2c);
 
     // Create a buffer able to be converted to a string.
+    //
     let mut buffer: [u8; 8] = [0; 8];
     let mut buf_writer = BufWriter::new(&mut buffer);
 
-    // Delay in milliseconds between UART writes.
-    //
-    const UART_WRITE_DELAY_MS: u16 = 500;
+    /// Algo delay in milliseconds.
+    ///
+    const ALGO_DELAY_MS: u16 = 500;
 
     loop {
         // Reset the buffer at the start of each iteration
@@ -183,6 +189,7 @@ fn main() -> ! {
         });
 
         // Limit algorithm to (1000 * (1 / UART_WRITE_DELAY_MS)) Hz.
-        delay.delay_ms(UART_WRITE_DELAY_MS);
+        //
+        delay.delay_ms(ALGO_DELAY_MS);
     }
 }

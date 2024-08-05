@@ -1,4 +1,34 @@
+# This CI workflow ensures that the project is built, tested, analyzed, and
+# documented across the supported Rust toolchains, enhancing the reliability and
+# quality of the codebase.
+# 
+# The workflow is triggered by:
+# - Pushes to the 'main' branch.
+# - Pull requests targeting the 'main' branch.
+# - Manual dispatch.
+# 
+# The workflow consists of four jobs:
+# 
+# 1. **Build**:
+#    - Uses a matrix to test against multiple Rust toolchains (1.65.0, stable, beta, nightly).
+#    - Builds the project in release mode.
+#    - Builds an example located in 'examples/read-decibel-value'.
+# 
+# 2. **Unit Tests**:
+#    - Uses a matrix to test against multiple Rust toolchains (1.65.0, stable, beta, nightly).
+#    - Runs the unit tests.
+#    - If the nightly toolchain is used, installs Miri and runs unit tests through Miri for undefined behavior detection.
+# 
+# 3. **Analysis**:
+#    - Runs Clippy for linting, allowing all lints.
+#    - Runs rustfmt to check code formatting.
+# 
+# 4. **Docs**:
+#    - Generates the documentation using rustdoc.
+#    - Uploads the generated documentation as an artifact named 'docs'.
+# 
 name: CI
+run-name: CI build initiated by ${{ github.actor }}
 
 on:
   push:
@@ -7,18 +37,26 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/engjay/build-rustc-1-78-thumbv7em-nehf-meson:0.1.0
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-      options: -h gha.ci.build
+    strategy:
+      matrix:
+        rust: [1.65.0, stable, beta, nightly]
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+      - name: Install target needed
+        run: |
+          rustup target add thumbv7em-none-eabihf
       - name: Build driver (release)
         run: |
           cargo build --release
@@ -30,40 +68,54 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/engjay/build-rustc-1-78-thumbv7em-nehf-meson:0.1.0
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-      options: -h gha.ci.unit-tests
+    strategy:
+      matrix:
+        rust: [1.65.0, stable, beta, nightly]
     steps:
       - uses: actions/checkout@v4
-      - name: Run unit tests with coverage
-        run: |
-          CARGO_INCREMENTAL=0 RUSTFLAGS='-Cinstrument-coverage' LLVM_PROFILE_FILE='cargo-test-%p-%m.profraw' cargo test
-      - name: Generate coverage report
-        run: |
-          mkdir -p target/coverage
-          grcov . --binary-path ./target/debug/deps/ -s . -t lcov --branch --ignore-not-existing --ignore '../*' --ignore "/*" -o target/coverage/tests.lcov
-      - uses: actions/upload-artifact@v4
+      - name: Set up Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          name: coverage-report.lcov
-          path: target/coverage/tests.lcov
+          toolchain: ${{ matrix.rust }}
+      - name: Install target needed
+        run: |
+          rustup target add thumbv7em-none-eabihf
+      - name: Run unit tests
+        run: |
+          cargo test
+      - name: Install Miri
+        if: matrix.rust == 'nightly'
+        run: |
+          rustup toolchain install nightly --component miri
+      - name: Run unit tests through Miri undefined behavior detection
+        if: matrix.rust == 'nightly'
+        run: |
+          cargo miri test
 
   analysis:
     name: Analysis
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/engjay/build-rustc-1-78-thumbv7em-nehf-meson:0.1.0
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-      options: -h gha.ci.analysis
+    strategy:
+      matrix:
+        rust: [1.65.0, stable, beta, nightly]
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+      - name: Install target needed
+        run: |
+          rustup target add thumbv7em-none-eabihf
+      - name: Install Clippy
+        run: |
+          rustup component add clippy --toolchain ${{ matrix.rust }}
+      - name: Install Rustfmt
+        run: |
+          rustup component add rustfmt --toolchain ${{ matrix.rust }}
       - name: Run clippy
         run: |
-          cargo clippy -- -A clippy::all
+          cargo clippy -- -D warnings
       - name: Format
         run: |
           cargo fmt --all -- --check
@@ -71,14 +123,11 @@ jobs:
   docs:
     name: Docs
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/engjay/build-rustc-1-78-thumbv7em-nehf-meson:0.1.0
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-      options: -h gha.ci.docs
     steps:
       - uses: actions/checkout@v4
+      - name: Install target needed
+        run: |
+          rustup target add thumbv7em-none-eabihf
       - name: Run rustdoc
         run: |
           cargo doc

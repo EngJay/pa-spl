@@ -5,8 +5,8 @@ use bitfield_struct::bitfield;
 use defmt::Format;
 use embedded_hal::blocking::i2c;
 
-/// PCB Artists SPL Module I2C address.
-const DEVICE_ADDR: u8 = 0x48;
+/// PCB Artists SPL Module I2C default address.
+const DEVICE_ADDR_DEFAULT: u8 = 0x48;
 
 /// CONTROL register address.
 const REG_CONTROL: u8 = 0x06;
@@ -110,13 +110,13 @@ pub struct ResetRegister {
 /// VESION register address.
 const REG_VERSION: u8 = 0x00;
 /// DECIBEL register address.
-const REG_DECIBEL: u8 = 0x0A;
+const REG_DECIBEL: u8 = 0x0a;
 /// Device ID registers, ID3, ID2, ID1, ID0
 const REGS_DEVICE_ID: [u8; 4] = [0x01, 0x02, 0x03, 0x04];
 /// MAX register.
-const REG_MAX: u8 = 0x0C;
+const REG_MAX: u8 = 0x0c;
 /// MIN register.
-const REG_MIN: u8 = 0xD;
+const REG_MIN: u8 = 0x0d;
 /// SCRATCH register address.
 const REG_SCRATCH: u8 = 0x05;
 /// TAVG register high byte address.
@@ -124,16 +124,21 @@ const REG_TAVG_HIGH: u8 = 0x07;
 /// Default value for averaging time in ms.
 pub const REG_AVERAGING_TIME_DEFAULT_MS: u16 = 1000;
 
+/// GAIN register.
+#[cfg(feature = "external_mic")]
+const REG_GAIN: u8 = 0x0f;
+
 /// A PA SPL Module on the I2C bus `I2C`.
 pub struct PaSpl<I2C>
 where
     I2C: i2c::Read + i2c::Write + i2c::WriteRead,
 {
     i2c: Option<I2C>,
+    device_addr: u8,
 }
 
 /// A driver error.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Error<E> {
     /// I2C bus error.
     I2c(E),
@@ -153,40 +158,20 @@ where
     ///
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
-    /// # Examples
-    /// ```ignore
-    /// // Configure clocks.
-    /// let device_periphs = unwrap!(pac::Peripherals::take());
-    /// let mut rcc = device_periphs.RCC.constrain();
-    /// let mut flash = device_periphs.FLASH.constrain();
-    /// let clocks = rcc.cfgr.freeze(&mut flash.acr);
-    ///
-    /// // Get the GRIO port for the pins needed.
-    /// let mut gpiob = device_periphs.GPIOB.split(&mut rcc.ahb);
-    ///
-    /// // Configure pins and create an instance of I2C1.
-    /// let mut scl =
-    ///     gpiob
-    ///         .pb6
-    ///         .into_af_open_drain(&mut gpiob.moder, &mut gpiob.otyper, &mut gpiob.afrl);
-    /// let mut sda =
-    ///     gpiob
-    ///         .pb7
-    ///         .into_af_open_drain(&mut gpiob.moder, &mut gpiob.otyper, &mut gpiob.afrl);
-    /// scl.internal_pull_up(&mut gpiob.pupdr, true);
-    /// sda.internal_pull_up(&mut gpiob.pupdr, true);
-    /// let i2c = I2c::new(
-    ///     device_periphs.I2C1,
-    ///     (scl, sda),
-    ///     100.kHz().try_into().unwrap(),
-    ///     clocks,
-    ///     &mut rcc.apb1,
-    /// );
-    ///
-    /// let pa_spl = PaSpl::new(i2c);
-    /// ```
     pub fn new(i2c: I2C) -> Self {
-        Self { i2c: Some(i2c) }
+        Self {
+            i2c: Some(i2c),
+            device_addr: DEVICE_ADDR_DEFAULT,
+        }
+    }
+
+    /// Sets a new I2C device address.
+    ///
+    /// The published device address is the default but the vendor's website
+    /// states that it is possible to order a device with a custom address.
+    ///
+    pub fn set_device_addr(&mut self, addr: u8) {
+        self.device_addr = addr;
     }
 
     /// Gets the 16-bit averaging time in ms from registers TAVG high and TAVG low (0x07 and 0x08).
@@ -196,12 +181,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```ignore
-    /// let avg_time_ms = pa_spl.get_avg_time().unwrap();
-    /// ```
     ///
     pub fn get_avg_time(&mut self) -> Result<u16, Error<E>> {
         let mut buffer: [u8; 2] = [0; 2];
@@ -221,11 +200,6 @@ where
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
     ///
-    /// # Examples
-    ///
-    /// ```ignore
-    /// let reg_control = pa_spl.get_control_register().unwrap();
-    /// ```
     pub fn get_control_register(&mut self) -> Result<ControlRegister, Error<E>> {
         let control_reg_raw = self.read_byte(REG_CONTROL)?;
         Ok(ControlRegister::from_bits(control_reg_raw))
@@ -238,12 +212,6 @@ where
     /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
-    ///
-    /// # Examples
-    ///
-    /// ```ignore
-    /// let device_id = pa_spl.get_device_id().unwrap();
-    /// ```
     ///
     pub fn get_device_id(&mut self) -> Result<u32, Error<E>> {
         let mut buffer: [u8; 4] = [0; 4];
@@ -266,13 +234,28 @@ where
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
     ///
-    /// # Examples
-    ///
-    /// ```ignore
-    /// let firmware_version = pa_spl.get_firmware_version().unwrap();
-    /// ```
     pub fn get_firmware_version(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_VERSION)
+    }
+
+    /// Gets the gain value in 0.5 decibel steps from the GAIN register.
+    ///
+    /// This value only needs to be modified if you are using your own
+    /// microphone. The default value will work with the default microphone
+    /// supplied with the module.
+    ///
+    /// Acceptable values are 0 to 95 to set the gain in 0.5 dB steps (+0.0 dB
+    /// to +47.5 dB).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    ///
+    #[cfg(feature = "external_mic")]
+    pub fn get_gain(&mut self) -> Result<u8, Error<E>> {
+        self.read_byte(REG_GAIN)
     }
 
     /// Gets the latest SPL value in decibels from the DECIBEL register.
@@ -286,11 +269,6 @@ where
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
     ///
-    /// # Examples
-    ///
-    /// ```ignore
-    /// let latest_decibel_val = pa_spl.get_latest_decibel().unwrap();
-    /// ```
     pub fn get_latest_decibel(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_DECIBEL)
     }
@@ -305,11 +283,6 @@ where
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
     ///
-    /// # Examples
-    ///
-    /// ```ignore
-    /// let max_decibel_val = pa_spl.get_max_decibel().unwrap();
-    /// ```
     pub fn get_max_decibel(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_MAX)
     }
@@ -324,11 +297,6 @@ where
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
     ///
-    /// # Examples
-    ///
-    /// ```ignore
-    /// let min_decibel_val = pa_spl.get_min_decibel().unwrap();
-    /// ```
     pub fn get_min_decibel(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_MIN)
     }
@@ -341,11 +309,6 @@ where
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
     ///
-    /// # Examples
-    ///
-    /// ```ignore
-    /// let val = pa_spl.get_scratch().unwrap();
-    /// ```
     pub fn get_scratch(&mut self) -> Result<u8, Error<E>> {
         self.read_byte(REG_SCRATCH)
     }
@@ -360,11 +323,6 @@ where
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
     ///
-    /// # Examples
-    ///
-    /// ```ignore
-    /// let result = pa_spl.reset();
-    /// ```
     pub fn reset(&mut self) -> Result<(), Error<E>> {
         let reg_reset = ResetRegister::new().with_system_reset(true);
         self.write_byte(REG_RESET, reg_reset.into_bits())
@@ -378,12 +336,6 @@ where
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
     ///
-    /// # Examples
-    ///
-    /// ```ignore
-    /// let new_avg_time_ms = 125;
-    /// let result = pa_spl.set_avg_time(new_avg_time_ms);
-    /// ```
     pub fn set_avg_time(&mut self, ms: u16) -> Result<(), Error<E>> {
         // Convert the average time in ms to high and low bytes.
         let tavg_high_byte: u8 = (ms >> 8) as u8;
@@ -401,15 +353,21 @@ where
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
     ///
-    /// # Examples
-    ///
-    /// ```ignore
-    /// let reg_control = ControlRegister::from_bits(REG_CONTROL_DEFAULT);
-    /// reg_control.set_filter_setting(FilterSetting::CWeighting);
-    /// let result = pa_spl.set_control_register(reg_control);
-    /// ```
     pub fn set_control_register(&mut self, reg: ControlRegister) -> Result<(), Error<E>> {
         self.write_byte(REG_CONTROL, reg.into_bits())
+    }
+
+    /// Sets the gain in the GAIN register.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoI2cInstance`] if the I2C instance is empty.
+    ///
+    /// Returns [`Error::I2c`] if I2C returns an error.
+    /// ```
+    #[cfg(feature = "external_mic")]
+    pub fn set_gain(&mut self, value: u8) -> Result<(), Error<E>> {
+        self.write_byte(REG_GAIN, value)
     }
 
     /// Sets the value stored in the SCRATCH register.
@@ -420,17 +378,12 @@ where
     ///
     /// Returns [`Error::I2c`] if I2C returns an error.
     ///
-    /// # Examples
-    ///
-    /// ```ignore
-    /// let scratch_val = 0x99;
-    /// let result = pa_spl.set_scratch(scratch_val);
-    /// ```
     pub fn set_scratch(&mut self, value: u8) -> Result<(), Error<E>> {
         self.write_byte(REG_SCRATCH, value)
     }
 
     /// Destroys this driver and releases the I2C bus.
+    ///
     pub fn destroy(&mut self) -> I2C {
         self.i2c
             .take()
@@ -438,36 +391,40 @@ where
     }
 
     /// Reads a single byte from an I2C register of the device.
+    ///
     fn read_byte(&mut self, reg: u8) -> Result<u8, Error<E>> {
         let mut buffer = [0; 1];
         self.i2c
             .as_mut()
             .ok_or(Error::NoI2cInstance)?
-            .write_read(DEVICE_ADDR, &[reg], &mut buffer)
+            .write_read(self.device_addr, &[reg], &mut buffer)
             .map_err(Error::I2c)?;
         Ok(buffer[0])
     }
 
     /// Read multiple bytes from a starting register.
+    ///
     fn read_bytes(&mut self, start_reg: u8, buffer: &mut [u8]) -> Result<(), Error<E>> {
         self.i2c
             .as_mut()
             .ok_or(Error::NoI2cInstance)?
-            .write_read(DEVICE_ADDR, &[start_reg], buffer)
+            .write_read(self.device_addr, &[start_reg], buffer)
             .map_err(Error::I2c)?;
         Ok(())
     }
 
     /// Writes a single byte to an I2C register of the device.
+    ///
     fn write_byte(&mut self, reg: u8, value: u8) -> Result<(), Error<E>> {
         self.i2c
             .as_mut()
             .ok_or(Error::NoI2cInstance)?
-            .write(DEVICE_ADDR, &[reg, value])
+            .write(self.device_addr, &[reg, value])
             .map_err(Error::I2c)
     }
 
     /// Writes two bytes from a starting register.
+    ///
     fn write_two_bytes(&mut self, reg: u8, buffer: &[u8]) -> Result<(), Error<E>> {
         if buffer.len() > 2 {
             return Err(Error::BufferOverflow);
@@ -476,7 +433,7 @@ where
         self.i2c
             .as_mut()
             .ok_or(Error::NoI2cInstance)?
-            .write(DEVICE_ADDR, &[reg, buffer[0], buffer[1]])
+            .write(self.device_addr, &[reg, buffer[0], buffer[1]])
             .map_err(Error::I2c)
     }
 }
@@ -488,9 +445,7 @@ mod tests {
         REG_CONTROL_DEFAULT, REG_RESET, REG_TAVG_HIGH,
     };
 
-    use super::{
-        PaSpl, DEVICE_ADDR, REGS_DEVICE_ID, REG_DECIBEL, REG_MAX, REG_MIN, REG_SCRATCH, REG_VERSION,
-    };
+    use super::*;
     use embedded_hal_mock::eh0::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
 
     /// DEVICE_VER_MEMS_LTS: Published version for base features + audio spectrum analyzer.
@@ -501,9 +456,23 @@ mod tests {
     const REG_TAVG_LOW_DEFAULT_BYTE: u8 = 0xE8;
 
     #[test]
+    fn confirm_set_device_addr() {
+        let expectations = vec![];
+        let i2c_mock = I2cMock::new(&expectations);
+
+        let mut pa_spl = PaSpl::new(i2c_mock);
+        let new_device_addr: u8 = 0x99;
+        pa_spl.set_device_addr(new_device_addr);
+        assert_eq!(new_device_addr, pa_spl.device_addr);
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
+    #[test]
     fn confirm_device_id() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REGS_DEVICE_ID[0]],
             vec![0x01, 0x02, 0x03, 0x04],
         )];
@@ -520,7 +489,7 @@ mod tests {
     #[test]
     fn confirm_firmware_version() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_VERSION],
             vec![DEVICE_VER_MEMS_LTS_ASA],
         )];
@@ -537,7 +506,7 @@ mod tests {
     #[test]
     fn confirm_get_avg_time() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_TAVG_HIGH],
             vec![REG_TAVG_HIGH_DEFAULT_BYTE, REG_TAVG_LOW_DEFAULT_BYTE],
         )];
@@ -554,7 +523,7 @@ mod tests {
     #[test]
     fn confirm_get_control_register() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_CONTROL],
             vec![REG_CONTROL_DEFAULT], // 0b0000_0010
         )];
@@ -569,10 +538,29 @@ mod tests {
         mock.done();
     }
 
+    #[cfg(feature = "external_mic")]
+    #[test]
+    fn confirm_get_gain() {
+        let expectations = vec![I2cTransaction::write_read(
+            DEVICE_ADDR_DEFAULT,
+            vec![REG_GAIN],
+            vec![18],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let expected_gain: u8 = 18;
+        let gain_val = pa_spl.get_gain().unwrap();
+        assert_eq!(expected_gain, gain_val);
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
     #[test]
     fn confirm_get_latest_decibel() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_DECIBEL],
             vec![0x12],
         )];
@@ -589,7 +577,7 @@ mod tests {
     #[test]
     fn confirm_get_max_decibel() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_MAX],
             vec![0x12],
         )];
@@ -606,7 +594,7 @@ mod tests {
     #[test]
     fn confirm_get_min_decibel() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_MIN],
             vec![0x12],
         )];
@@ -623,7 +611,7 @@ mod tests {
     #[test]
     fn confirm_get_scratch() {
         let expectations = vec![I2cTransaction::write_read(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_SCRATCH],
             vec![0x99],
         )];
@@ -641,7 +629,7 @@ mod tests {
     #[test]
     fn confirm_reset() {
         let expectations = vec![I2cTransaction::write(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_RESET, 0b0000_1000],
         )];
         let i2c_mock = I2cMock::new(&expectations);
@@ -660,7 +648,7 @@ mod tests {
         let tavg_high_expected_byte: u8 = 0x00;
         let tavg_low_expected_byte: u8 = 0x7D;
         let expectations = vec![I2cTransaction::write(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![
                 REG_TAVG_HIGH,
                 tavg_high_expected_byte,
@@ -681,12 +669,12 @@ mod tests {
     fn confirm_set_control_register() {
         let expectations = vec![
             I2cTransaction::write_read(
-                DEVICE_ADDR,
+                DEVICE_ADDR_DEFAULT,
                 vec![REG_CONTROL],
                 vec![REG_CONTROL_DEFAULT], // 0b0000_0010
             ),
             I2cTransaction::write(
-                DEVICE_ADDR,
+                DEVICE_ADDR_DEFAULT,
                 vec![REG_CONTROL, 0b0000_0100], // 0b0000_0100
             ),
         ];
@@ -703,11 +691,29 @@ mod tests {
         mock.done();
     }
 
+    #[cfg(feature = "external_mic")]
+    #[test]
+    fn confirm_set_gain() {
+        let new_gain_val: u8 = 43;
+        let expectations = vec![I2cTransaction::write(
+            DEVICE_ADDR_DEFAULT,
+            vec![REG_GAIN, new_gain_val],
+        )];
+        let i2c_mock = I2cMock::new(&expectations);
+        let mut pa_spl = PaSpl::new(i2c_mock);
+
+        let result = pa_spl.set_gain(new_gain_val);
+        assert!(result.is_ok());
+
+        let mut mock = pa_spl.destroy();
+        mock.done();
+    }
+
     #[test]
     fn confirm_set_scratch() {
         let scratch_write_val: u8 = 0x99;
         let expectations = vec![I2cTransaction::write(
-            DEVICE_ADDR,
+            DEVICE_ADDR_DEFAULT,
             vec![REG_SCRATCH, scratch_write_val],
         )];
         let i2c_mock = I2cMock::new(&expectations);

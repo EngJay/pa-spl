@@ -1,8 +1,10 @@
 [package]
-authors = ["auser"]
-edition = "2021"
-readme = "README.md"
 name = "example-read-decibel-value"
+description = "Example of reading SPL with the pa-spl driver, PCB Artists SPL module, and STM32F3 Discovery"
+authors = ["Jason Scott <reachme@jasonpscott.com>"]
+edition = "2021"
+publish = false
+readme = "README.md"
 version = "0.1.0"
 
 [dependencies]
@@ -13,26 +15,12 @@ panic-halt = "0.2.0"
 stm32f3xx-hal = { version = "0.10.0", features = ["ld", "rt", "stm32f303xc"] }
 pa-spl = { path = "../../" }
 
-# Uncomment for the panic example.
-# panic-itm = "0.4.1"
-
-# Uncomment for the allocator example.
-# alloc-cortex-m = "0.4.0"
-
-# Uncomment for the device example.
-# Update `memory.x`, set target to `thumbv7em-none-eabihf` in `.cargo/config`,
-# and then use `cargo build --example device` to build it.
-# [dependencies.stm32f3]
-# features = ["stm32f303", "rt"]
-# version = "0.15.1"
-
-# this lets you use `cargo fix`!
 [[bin]]
 name = "example-read-decibel-value"
 test = false
 bench = false
 
 [profile.release]
-codegen-units = 1 # better optimizations
-debug = true      # symbols are nice and they don't increase the size on Flash
-lto = true        # better optimizations
+codegen-units = 1
+debug = true
+lto = true
